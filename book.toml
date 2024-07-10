@@ -1,0 +1,18 @@
+[book]
+title = "The PGXN RFC Book"
+authors = []
+language = "en"
+multilingual = false
+src = "src"
+
+[output.html]
+smart-punctuation = true
+no-section-label = true
+git-repository-url = "https://github.com/pgxn/rfcs"
+site-url = "/"
+
+[output.html.search]
+heading-split-level = 0
+
+[output.html.playground]
+runnable = false
