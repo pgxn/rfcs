@@ -35,7 +35,7 @@ another extension developer. That generally means:
 *   Discuss how this impacts the ability to develop, build and distribute
     extension packages.
 
-# Reference-level explanation
+## Reference-level explanation
 
 This is the technical portion of the RFC. Explain the design in sufficient
 detail that:
