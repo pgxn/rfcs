@@ -1,4 +1,4 @@
-# PGXN RFCs - [PGXN Book](https://rfcs.pgxn.org/)
+# PGXN RFCs --- [PGXN Book](https://rfcs.pgxn.org/)
 
 [PGXN RFCs]: #pgxn-rfcs
 
