@@ -52,8 +52,9 @@ def collect(summary, path, depth):
     for entry in entries:
         indent = '    '*depth
         name = entry.name[:-3]
+        title = read_title(entry)
         link_path = entry.path[5:]
-        summary.write(f'{indent}- [{name}]({link_path})\n')
+        summary.write(f'{indent}*   [{title}]({link_path})\n')
         maybe_subdir = os.path.join(path, name)
         if os.path.isdir(maybe_subdir):
             collect(summary, maybe_subdir, depth+1)
@@ -61,6 +62,15 @@ def collect(summary, path, depth):
 def symlink(src, dst):
     if not os.path.exists(dst):
         os.symlink(src, dst)
+
+def read_title(entry):
+    name = entry.name[:-3]
+    with open(entry.path, 'r') as rfc:
+        lines = rfc.readlines()
+        for line in lines:
+            if line.startswith('*   **Title:** '):
+                return name[:4] + " " + line.removeprefix('*   **Title:** ').strip()
+    name
 
 if __name__ == '__main__':
     main()

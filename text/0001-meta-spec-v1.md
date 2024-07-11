@@ -1,7 +1,9 @@
-- Slug: `meta-spec`
-- Start Date: 2010-08-17
-- Status: Standard
-- RFC PR: [pgxn/rfcs#0001](https://github.com/pgxn/rfcs/pull/1)
+*   **RFC:** 1
+*   **Title:** PGXN Meta Spec
+*   **Slug:** `meta-spec`
+*   **Start Date:** 2010-08-17
+*   **Status:** Standard
+*   **Pull Request:** [pgxn/rfcs#1](https://github.com/pgxn/rfcs/pull/1)
 
 Name
 ====

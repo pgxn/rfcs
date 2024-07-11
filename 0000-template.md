@@ -1,22 +1,23 @@
-- Slug: (fill me in with a unique slug, `my_awesome_feature`)
-- Start Date: (fill me in with today's date, YYYY-MM-DD)
-- Status: Proposed Standard (May be "Proposed", "Draft", "Standard")
-- RFC PR: [pgxn/rfcs#0000](https://github.com/pgxn/rfcs/pull/0000)
-- PGXN Issue: [pgxn/repo#0000](https://github.com/pgxn/repo/issues/0000)
+*   **RFC:** 0000 (fill in with pull request number)
+*   **Title:** (fill me in with unique name, My Awesome Feature)
+*   **Slug:** (fill me in with a unique slug, `my_awesome_feature`)
+*   **Start Date:** (fill me in with today's date, YYYY-MM-DD)
+*   **Status:** Proposed Standard (May be "Proposed", "Draft", "Standard")
+*   **Pull Request:** [pgxn/rfcs#0000](https://github.com/pgxn/rfcs/pull/0000)
+*   **Implementation Issue:** [pgxn/repo#0000](https://github.com/pgxn/repo/issues/0000)
 
-# Abstract
-[abstract]: #abstract
+# RFC--0000 --- [Fill In Title]
+
+## Abstract
 
 One paragraph explanation of the feature.
 
-# Introduction
-[introduction]: #introduction
+## Introduction
 
 Background and purpose. Why are we doing this? What use cases does it support?
 What is the expected outcome?
 
-# Guide-level explanation
-[guide-level-explanation]: #guide-level-explanation
+## Guide-level explanation
 
 Explain the proposal as if it already existed and you were teaching it to
 another extension developer. That generally means:
@@ -34,7 +35,6 @@ another extension developer. That generally means:
     extension packages.
 
 # Reference-level explanation
-[reference-level-explanation]: #reference-level-explanation
 
 This is the technical portion of the RFC. Explain the design in sufficient
 detail that:
@@ -46,21 +46,18 @@ detail that:
 The section should return to the examples given in the previous section, and
 explain more fully how the detailed proposal makes those examples work.
 
-# Drawbacks
-[drawbacks]: #drawbacks
+## Drawbacks
 
 Why should we *not* do this?
 
-# Rationale and alternatives
-[rationale-and-alternatives]: #rationale-and-alternatives
+## Rationale and alternatives
 
 *    Why is this design the best in the space of possible designs?
 *    What other designs have been considered and what is the rationale for not
      choosing them?
 *    What is the impact of not doing this?
 
-# Prior art
-[prior-art]: #prior-art
+## Prior art
 
 Discuss prior art, both the good and the bad, in relation to this proposal. A
 few examples of what this can include are:
@@ -81,8 +78,7 @@ picture. If there is no prior art, that is fine --- your ideas are interesting
 to us whether they are brand new or if it is an adaptation from other
 packaging and distribution systems.
 
-# Unresolved questions
-[unresolved-questions]: #unresolved-questions
+## Unresolved questions
 
 *    What parts of the design do you expect to resolve through the RFC process
      before this gets merged?
@@ -92,8 +88,7 @@ packaging and distribution systems.
      be addressed in the future independently of the solution that comes out
      of this RFC?
 
-# Future possibilities
-[future-possibilities]: #future-possibilities
+## Future possibilities
 
 Think about what the natural extension and evolution of your proposal would be
 and how it would affect the ecosystem and project as a whole in a holistic
