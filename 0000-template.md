@@ -4,6 +4,7 @@
 *   **Slug:** (fill me in with a unique slug, `my_awesome_feature`)
 *   **Start Date:** (fill me in with today's date, YYYY-MM-DD)
 *   **Status:** Proposed Standard (May be "Proposed", "Draft", "Standard")
+*   **Category:** Packaging (May be "Packaging" or "Governance")
 *   **Pull Request:** [pgxn/rfcs#0](https://github.com/pgxn/rfcs/pull/0)
 *   **Implementation Issue:** [pgxn/repo#0](https://github.com/pgxn/repo/issues/0)
 

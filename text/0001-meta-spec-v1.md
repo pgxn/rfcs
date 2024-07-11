@@ -4,6 +4,7 @@
 *   **Slug:** `meta-spec`
 *   **Start Date:** 2010-08-17
 *   **Status:** Standard
+*   **Category:** Packaging
 *   **Pull Request:** [pgxn/rfcs#1](https://github.com/pgxn/rfcs/pull/1)
 
 Name
