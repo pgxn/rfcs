@@ -1,5 +1,6 @@
+{{#title PGXN RFC–1 — Meta Spec v1}}
 *   **RFC:** 1
-*   **Title:** PGXN Meta Spec
+*   **Title:** Meta Spec v1
 *   **Slug:** `meta-spec`
 *   **Start Date:** 2010-08-17
 *   **Status:** Standard

@@ -1,12 +1,13 @@
-*   **RFC:** 0000 (fill in with pull request number)
-*   **Title:** (fill me in with unique name, My Awesome Feature)
+{{#title PGXN RFC–0 — (fill me in with unique title, My Awesome Feature)}}
+*   **RFC:** 0 (fill in with pull request number)
+*   **Title:** (fill me in with title part of {{#title}} above)
 *   **Slug:** (fill me in with a unique slug, `my_awesome_feature`)
 *   **Start Date:** (fill me in with today's date, YYYY-MM-DD)
 *   **Status:** Proposed Standard (May be "Proposed", "Draft", "Standard")
-*   **Pull Request:** [pgxn/rfcs#0000](https://github.com/pgxn/rfcs/pull/0000)
-*   **Implementation Issue:** [pgxn/repo#0000](https://github.com/pgxn/repo/issues/0000)
+*   **Pull Request:** [pgxn/rfcs#0](https://github.com/pgxn/rfcs/pull/0)
+*   **Implementation Issue:** [pgxn/repo#0](https://github.com/pgxn/repo/issues/0)
 
-# RFC--0000 --- [Fill In Title]
+# RFC--0 --- [Fill In Title]
 
 ## Abstract
 
