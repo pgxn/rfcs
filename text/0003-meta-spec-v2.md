@@ -26,7 +26,7 @@ full-text search, binary packaging, and more.
 
 Distribution metadata describe important properties of source code [archive
 files][archive file] distributed on the PostgreSQL Extension Network, or
-[PGXN]. Tools that build PGXN source distribution archives must create a
+[PGXN]. Tools that create PGXN source distribution archives must write a
 metadata file in accordance with this specification and include it in the
 distribution archive for use by automated tools that index, examine, package,
 or install PGXN source distributions.
@@ -67,20 +67,23 @@ together.
 
 #### Source Distribution ####
 
-An [archive file] of the source code for the release of a [Package](#package),
-together with metadata defined by this spec, distributed for other developers
-to build, install, and use. The file name of a Source Distribution consists of
-the package name, a dash, and the version, e.g., `pgtap-1.14.3.zip`.
+An [archive file] of the source code for the release of single version of a
+[Package](#package), together with metadata defined by this spec, distributed
+for other DBAs, packagers, and developers to build, install, and use. The file
+name of a Source Distribution consists of the [Package Name](#package-name), a
+dash, and the [SemVer](#semver) version, e.g., `pgtap-1.14.3.zip`.
 
 Usually referred to as a "Distribution", including in this document. The full
 term "Source Distribution" is used where necessary to distinguish from binary
-distributions of a [Package](#package) (not covered by this RFC).
+distributions of a [Package](#package), as in
+[RFC--2](0002-binary-distribution-format.md).
 
 #### Extension ####
 
-A software component that extends the capabilities of a PostgreSQL database or
-cluster. Extensions **MAY** be `CREATE EXTENSION` [extensions], [background
-workers], command-line apps, [loadable modules], shared libraries, and more.
+A software component that extends the capabilities of or experience using a
+PostgreSQL database or cluster. Extensions **MAY** be `CREATE EXTENSION`
+[extensions], [background workers], command-line apps, [loadable modules],
+shared libraries, and more.
 
 #### Consumer ####
 
@@ -112,6 +115,10 @@ represented as a defined (not `null`) value.
 A *String* is data element containing a non-zero length sequence of Unicode
 characters.
 
+#### Number ####
+
+A *Number* is an integer or decimal number.
+
 #### Array ####
 
 An *Array* is an ordered collection of one or more data elements. Items in an
@@ -128,6 +135,15 @@ Object's values **MAY** be of mixed types.
 A *Term* is a [String](#string) that **MUST** be at least two characters long,
 and contain no slash (`/`), backslash (`\`), control, or space characters.
 
+#### Package Name ####
+
+A *Package Name* is a [String](#string) with the following constraints:
+
+*   **MUST** be at least two characters long.
+*   **MUST NOT** start with a digit or include a digit after a dash (`-`)
+*   **MUST NOT** contain  slash (`/`), backslash (`\`), control, or space
+    characters.
+
 #### Tag ####
 
 A *Tag* is a [String](#string) that **MUST** be at least two and no more than
@@ -143,54 +159,65 @@ Locator as defined by [IETF RFC 3986].
 
 *Path* is a [String](#string) with a relative file path that identifies a file
 in the [Distribution](#source-distribution). The path **MUST** be specified
-with unix conventions.
+with Unix conventions.
 
-#### Version ####
+#### Path Pattern ####
 
-A *Version* is a [String](#string) containing a value that describes the
-version number of extensions or distributions, and adhere to the format of the
-[Semantic Versioning 2.0.0 Specification][semver] with the exception of [Build
-metadata], which is reserved for use by downstream packaging systems.
+*Path Pattern* is a [String](#string) that defines a pattern to identify one
+or more files in the [Distribution](#source-distribution). Its format, based
+on the [gitignore format] and [fnmatch], is as follows:
+
+*   The slash (`/`) is used as the directory separator. Separators may occur
+    at the beginning, middle or end of the pattern.
+*   If there is a separator at the beginning or middle (or both) of the
+    pattern, then the pattern is relative to the root directory level of the
+    [Distribution](#source-distribution). Otherwise the pattern may also match
+    at any level below the root directory.
+*   If there is a separator at the end of the pattern then the pattern will
+    only match directories, otherwise the pattern can match both files and
+    directories.
+*   An asterisk `(*)` matches anything except a slash. The character `?`
+    matches any one character except `/` The range notation, e.g. [a-zA-Z],
+    can be used to match one of the characters in a range.
+
+#### SemVer ####
+
+A *SemVer* is a [String](#string) containing a value that describes the
+version number of extensions or distributions, and adheres to the format of
+the [Semantic Versioning 2.0.0 Specification][semver] with the exception of
+[Build metadata], which is reserved for use by downstream packaging systems.
 
 #### Version Range ####
 
-A *Version Range* is a [String](#string) that describes a range of
-[Versions](#version) that **MAY** be present or installed to fulfill
-dependencies.
+A *Version Range* is a [String](#string) or [Number](#number) that describes a
+range of [SemVers](#semver) or other versioning format that **MAY** be present
+or installed to fulfill dependencies.
 
-The simplest format for a Version Range is just the [Versions](#version)
-itself, e.g. `2.4.2`. This means that **at least** version 2.4.2 must be
-present. Versions may also be truncated to their major or minor parts, as
-appropriate. For example, `2.4` means that **at least** version 2.4.0 must be
-present.
+A Version Range of the number `0` indicates all available versions. No other
+[Number](#number) values are allowed.
+
+Often a Version Range is just a single version. For a [SemVer], for example,
+`2.4.2` means that **at least** version 2.4.2 must be present.
 
 Alternatively, a version range **may** use the operators `<` (less than), `<=`
 (less than or equal), `>` (greater than), `>=` (greater than or equal), `==`
-(equal), and `!=` (not equal). For example, the specification `< 2` means that
-any version less than version 2 is suitable.
+(equal), and `!=` (not equal). For example, the specification `< 2.0` means
+that any version less than version 2.0 is suitable.
 
 For more complicated situations, version specifications **may** be AND-ed
-together using commas. The specification `>= 1.2, != 1.5.2, < 2.0`
-indicates a version that must be **at least** 1.2, **less than** 2.0, and
+together using commas. The specification `>= 1.2.0, != 1.5.2, < 2.0.0`
+indicates a version that must be **at least** 1.2.0, **less than** 2.0.0, and
 **not equal to** 1.5.2.
-
-#### License String ####
-
-A *License String* is a [String](#string) identifying a licenses. Its values
-are restricted to and defined by the [SPDX License List]. Examples:
-
-*   `PostgreSQL`
-*   `MIT`
-*   `Apache-2.0`
-*   `BSD-2-Clause`
-*   `GPL-2.0-only`
 
 #### License Expression ####
 
 A *License Expression* is a [String](#string) that represents one or more
-licenses by combining [License Strings](#license-string) into a single value.
-The format is defined by [SPDX Standard License Expression]. Examples:
+licenses from the [SPDX License List] in a single value. The format is defined
+by [SPDX Standard License Expression]. Examples:
 
+*   `PostgreSQL`
+*   `MIT`
+*   `Apache-2.0`
 *   `LGPL-2.1-only OR MIT`
 *   `LGPL-2.1-only AND MIT AND BSD-2-Clause`
 *   `GPL-2.0-or-later WITH Bison-exception-2.2`
@@ -201,11 +228,12 @@ The format is defined by [SPDX Standard License Expression]. Examples:
 A *purl* is a [String](#string) containing a valid package in the format
 defined by the [purl spec]. All known [purl Types] **MAY** be used, as well as
 `pgxn` for PGXN packages and `postgres` for PostgreSQL core [contrib] or
-development packages. Some examples:
+development packages. Versions appearing after a `@` are valid but ignored.
+Some examples:
 
 *   `pkg:pgxn/pgtap`
 *   `pkg:postgres:pg_regress`
-*   `pkg:generic/python3@3`
+*   `pkg:generic/python3`
 *   `pkg:pypi/pyarrow@11.0.0`
 
 #### Platform ####
@@ -216,9 +244,10 @@ architecture: `$os-$version-$architecture`.
 
 If the string contains no dash, it represents only the OS. If it contains a
 single dash, the values represent the OS and the architecture. The complete
-list of values will be determined by the [bulid farm animals]. Some likely
-Examples:
+list of values will be derived from the [bulid farm animals] in another RFC.
+Some likely Examples:
 
+*   `any`: Any platform
 *   `linux`: Any Linux
 *   `linux-amd64`: Any Linux on amd64/x86_64
 *   `gnulinux-amd64`: [GNU] Linux on amd64/x86_64
@@ -246,7 +275,7 @@ generate or output invalid properties.
 For each property, one or more examples are provided followed by a
 description. The description begins with the version of spec in which the
 property was added or in which the definition was modified, whether the
-property is **REQUIRED** or **OPTIONAL**, and the data type of the value.
+property is **required** or **optional**, and the data type of the value.
 These items are in parentheses, brackets, and braces, respectively.
 
 If a data type is an [Object](#object), valid sub-properties will be described
@@ -304,7 +333,7 @@ by the [Distribution](#source-distribution).
 #}
 ```
 
-(Spec 2) [required] {[Array](#array) of [Objects]{#object}}
+(Spec 2) [required] {[Array](#array) of [Objects](#object)}
 
 This property indicates the person(s) to contact concerning the
 [Distribution](#source-distribution). Each [Object](#object) in the
@@ -342,13 +371,13 @@ to or instead of the original author.
 #}
 ```
 
-(Spec 1) [required] {[License String](#license-string) or [License Expression](#license-expression)}
+(Spec 1) [required] {[License Expression](#license-expression)}
 
 One or more licenses that apply to some or all of the files in the
 [Distribution](#source-distribution). For [License
-Expressions](#license-expression), the [Distribution](#source-distribution)
-documentation **SHOULD** be consulted to clarify the interpretation of
-multiple licenses.
+Expressions](#license-expression) containing multiple licenses, the
+[Distribution](#source-distribution) documentation **SHOULD** clarify the
+interpretation of those licenses.
 
 ##### contents ######
 
@@ -360,7 +389,6 @@ multiple licenses.
         "sql": "sql/pair.sql",
         "doc": "doc/pair.md",
         "abstract": "A key/value pair data type",
-        "preload": "session",
         "tle": true,
         "control": "pair.control"
       }
@@ -384,7 +412,7 @@ multiple licenses.
         "lib": "lib/lib_pair",
         "doc": "doc/lib_pair.md",
         "abstract": "A library hooking function calls to convert pairs to named parameters",
-        "load": "shared_preload_libraries"
+        "preload": "session"
       }
     }
   }
@@ -454,7 +482,7 @@ present in the `contents` object. The properties are as follows:
     *   **abstract**: A [String](#string) containing a short description of
         the app.
 *   **modules**: [Objects](#object) describing [loadable modules] that can be
-    loaded into Postgres. Properties are module name [Terms](#term) pointing
+    loaded into PostgreSQL. Properties are module name [Terms](#term) pointing
     to [Objects](#object) with the following properties:
     *   **src**: A [Path](#path) pointing to the main source file for the
         module. **REQUIRED**.
@@ -473,7 +501,7 @@ present in the `contents` object. The properties are as follows:
     name [Terms](#term) pointing to [Objects](#object) with the following
     properties:
     *   **src**: A [Path](#path) pointing to the main source file or directory
-       of files for the library. **REQUIRED**.
+        of files for the library. **REQUIRED**.
     *   **doc**: A [Path](#path) pointing to the main documentation file for
         the library, which **SHOULD** be more than a README.
     *   **abstract**: A [String](#string) containing a short description of
@@ -485,22 +513,24 @@ present in the `contents` object. The properties are as follows:
 #{
   "meta-spec": {
     "version": "2.0.0",
-    "url": "https://pgxn.org/meta/v2/spec.txt"
+    "url": "https://rfcs.pgxn.org/0003-meta-spec-v2.html"
   }
 #}
 ```
 
 (Spec 1) [required] {[Map](#Map)}
 
-This field indicates the [Version](#Version) of the PGXN Meta Spec that
-**SHOULD** be used to interpret the metadata. Consumers **MUST** check this
-key as soon as possible and abort further metadata processing if the meta-spec
-[Version](#version) is not supported by the consumer.
+This field indicates the [SemVer](#semver) of the PGXN Meta Spec that
+**SHOULD** be used to interpret the metadata. [Consumers](#consumer) **MUST**
+check this key as soon as possible and abort further metadata processing if
+the meta-spec [SemVer](#semver) is not supported by the
+[Consumers](#consumer).
 
 The following properties are valid, but only `version` is **REQUIRED**.
 
-*   **version**: The [Version](#version) of the PGXN Meta Spec against which
-    the metadata object was generated.
+*   **version**: The [SemVer](#semver) of the PGXN Meta Spec against which
+    the metadata object was generated. **MUST** be a valid, released v2 spec
+    version, usually `2.0.0`.
 
 *   **url**: The [URI](#uri) of the metadata specification corresponding to
     the given version. This is strictly for human-consumption and **SHOULD
@@ -508,20 +538,19 @@ The following properties are valid, but only `version` is **REQUIRED**.
 
 ##### name #####
 
-Example:
-
 ``` json
 #{
   "name": "pgTAP"
 #}
 ```
 
-(Spec 1) [required] {[Term](#Term)}
+(Spec 1) [required] {[Package Name](#package-name)}
 
 This property is the name of the [Package](#package) provided by the
 [Distribution](#source-distribution). This is usually the same as the name of
 the "main extension" in the [contents](#contents) of the [Package](#package),
-but **MAY** be completely unrelated. This value will be used in the
+but **MAY** be different to comply with the [Package Name](#package-name)
+constraints, or be completely unrelated. This value will be used in the
 [Distribution](#source-distribution) file name on [PGXN].
 
 ##### version #####
@@ -532,11 +561,11 @@ but **MAY** be completely unrelated. This value will be used in the
 #}
 ```
 
-(Spec 1) [required] {[Version](#version)}
+(Spec 1) [required] {[SemVer](#semver)}
 
 This property gives the version of the [Distribution](#source-distribution) to
 which the metadata structure refers. Its value **MUST** be a
-[Version](#version).
+[SemVer](#semver).
 
 All of the items listed in [contents](#contents) will be considered to have
 this version; any references they make to a version, such as the [control
@@ -558,24 +587,22 @@ A longer, more complete description of the purpose or intended use of the
 [Package](#package) provided by the [Distribution](#source-distribution),
 answering the question "what is this thing and what value is it?"
 
-##### generated_by #####
-
-Example:
+##### producer #####
 
 ``` json
 #{
-  "generated_by": "Module::Build::PGXN version 0.42"
+  "producer": "Module::Build::PGXN version 0.42"
 #}
 ```
 
-(Spec 1) [optional] {[String](#string)}
+(Spec 2) [optional] {[String](#string)}
 
-This property indicates the tool that was used to create this metadata. There
-are no defined semantics for this property, but it is traditional to use a
-string in the form "Software package version 1.23", or the maintainer's name
-if the metadata was generated by hand.
+This property indicates the [Producer](#producer) that created the metadata.
+There are no defined semantics for this property, but it is traditional to use
+a string in the form "Software package version 1.23.0", or the maintainer's
+name if the metadata was generated by hand.
 
-##### classification #####
+##### classifications #####
 
 ``` json
 #{
@@ -631,12 +658,11 @@ following properties:
 #}
 ```
 
-(Spec 2) [optional] {[Array](#Array) of [Strings](#string)}
+(Spec 2) [optional] {[Array](#Array) of [Path Patterns](#path-pattern)}
 
 This [Array](#array) describes any files or directories that are private to
 the [Distribution](#source-distribution) and **SHOULD** be ignored by indexing
-or search tools. Values are [Paths](#path) or [Strings](#string) based on a
-subset of the [gitignore format].
+or search tools.
 
 ##### dependencies #####
 
@@ -644,7 +670,7 @@ subset of the [gitignore format].
 #{
   "dependencies": {
     "postgres": {
-      "version": "14"
+      "version": "14.0"
     },
   }
 #}
@@ -654,7 +680,7 @@ subset of the [gitignore format].
 #{
   "dependencies": {
     "postgres": {
-      "version": ">= 12, < 17",
+      "version": ">= 12.0, < 17.0",
       "with": [ "xml", "uuid", "perl" ]
     },
     "pipeline": "pgxs",
@@ -687,7 +713,7 @@ subset of the [gitignore format].
     ],
     "packages": {
       "configure": {
-        "requires": { "pkg:cargo/cargo-pgrx": "=0.11.4" }
+        "requires": { "pkg:cargo/cargo-pgrx": "==0.11.4" }
       },
       "test": {
         "requires": {
@@ -711,7 +737,7 @@ subset of the [gitignore format].
 #{
   "dependencies": {
     "postgres": {
-      "version": ">= 15, < 16"
+      "version": ">= 15.0, < 16.0"
     },
     "pipeline": "pgxs",
     "platforms": [
@@ -721,7 +747,7 @@ subset of the [gitignore format].
     "packages": {
       "configure": {
         "requires": {
-          "pkg:cargo/cargo-pgrx": "=0.11.4",
+          "pkg:cargo/cargo-pgrx": "==0.11.4",
           "pkg:generic/bison": 0,
           "pkg:generic/cmake": 0,
           "pkg:generic/flex": 0,
@@ -772,10 +798,9 @@ subset of the [gitignore format].
 
 This property identifies dependencies required to configure, build, test,
 install, and run the [Package](#package) provided by the
-[Distribution](#source-distribution), expressed as [purls](#purl). These
-include not only PGXN packages, but also external libraries, system
-dependencies, and versions of PostgreSQL --- as well as any OS and
-architectures ([arm64], [amd64], etc.).
+[Distribution](#source-distribution). These include not only PGXN packages,
+but also external libraries, system dependencies, and versions of PostgreSQL
+--- as well as any OS and architectures ([arm64], [amd64], etc.).
 
 [Consumers](#consumer) **SHOULD** use this data to determine what dependencies
 to install.
@@ -796,10 +821,9 @@ Properties:
     properties:
     *   **version**: A [Version Range](#version-range) identifying the
         supported versions of PostgreSQL. **REQUIRED**.
-    *   **with**: An [Array](#array) of [Terms](#term) that correspond
-        features that are required to be compiled into PostgreSQL. Each
-        corresponds to the appropriate `--with` [configure flags].
-        **OPTIONAL**.
+    *   **with**: An [Array](#array) of [Terms](#term) that specify features
+        that are required to be compiled into PostgreSQL. Each corresponds to
+        the appropriate `--with` [configure flags]. **OPTIONAL**.
 
 *   **pipeline**: A [Term](#term) identifying the build pipeline required to
     configure, build, test, and install the [Package](#package) provided by
@@ -835,9 +859,9 @@ Properties:
     dependency variations. Each object contains two properties:
     *   **where**: An [Object](#object) containing the subset of the
         [dependencies](#dependencies) to identify a variation, such as
-        `{ "platforms": ["gnulinux-arm64", "gnulinux-amd64"] }` for Linux
-        configurations, or `{"postgres": { "version": ">= 16, < 17" }}` for
-        PostgreSQL versions. **MUST NOT** include a `variations` property.
+        `{ "platforms": ["linux"] }` for Linux configurations, or
+        `{"postgres": { "version": ">= 16.0, < 17.0" }}` for PostgreSQL
+        versions. **MUST NOT** include a `variations` property.
     *   **dependencies**: An [Object](#object) containing the subset of
         [dependencies](#dependencies) required for the `where` property's
         configuration. **MUST NOT** include a `variations` property.
@@ -882,7 +906,7 @@ properties:
     images that **SHOULD** follow the [Shields badge specification]. It
     **MUST** have at least one entry, and all entries require two properties:
     *   **src**: The [URI](#uri) for the badge.
-    *   **alt**: Alt text for the badge.
+    *   **alt**: Alternate text for accessability.
 
 ##### artifacts #####
 
@@ -910,13 +934,12 @@ properties:
 
 (Spec 2) [optional] {[Array](#array)}
 
-An [Array](#array) of [Objects](#objects) describing links and checksums for
-downloading the [Package](#package) provided by the
-[Distribution](#source-distribution) in one or more formats, including source
-code, binaries, system packages, and more. [Consumers](#consumer) my use this
-information to determine the best option for installing an extension on a
-particular system. Useful for projects that publish their own binaries, such
-as in GitHub releases.
+An [Array](#array) of [Objects](#objects) describing non-PGXN links and
+checksums for downloading the [Distribution](#source-distribution) in one or
+more formats, including source code, binaries, system packages, etc.
+[Consumers](#consumer) **MAY** use this information to determine the best
+option for installing an extension on a particular system. Useful for projects
+that publish their own binaries, such as in GitHub releases.
 
 The [Array](#array) **MUST** have at least one [Object](#object). The
 properties of each [Object](#object) are:
@@ -939,10 +962,11 @@ Each URL **MUST** properly resolve and the checksum **MUST** match.
 The `packages` sub-property of the [dependencies](#dependencies) property
 defines the relationship between a [Distribution](#source-distribution) and
 external dependencies --- including other PGXN [Packages](#package), system
-packages, and third-party packages --- expressed as [purls](#purl). The
-structure is an [Object](#object) that specifies package dependencies into
-*Phases* of activity in the installation process, and *Relationships* that
-indicate how dependencies **SHOULD** be resolved.
+packages, and third-party packages --- expressed as [purls](#purl) mapped
+[Version Ranges](#version-range). The structure is an [Object](#object) that
+specifies package dependencies for *Phases* of activity in the installation
+process, and *Relationships* that indicate how dependencies **SHOULD** be
+resolved.
 
 For example, to specify that the [PGXN] extension `pgtap` is required during
 the `test` phase, this entry would appear in the
@@ -979,14 +1003,14 @@ greater but not 1.5.2:
 #{
   "packages": {
     "test": {
-      "requires": { "pkg:pgxn/pair": ">= 1.2, != 1.5.2" }
+      "requires": { "pkg:pgxn/pair": ">= 1.2.0, != 1.5.2" }
     }
   }
 #}
 ```
 
 [Producers](#producer) **SHOULD** avoid OS-specific [purls](#purl) such as
-`pkg:rpm:/libreadline-dev` unless the [Distribution](#source-distribution)
+`pkg:rpm/libreadline-dev` unless the [Distribution](#source-distribution)
 supports only OSes that provide such packages. See the "variations" property
 of the [dependencies](#dependencies) object for platform-specific dependency
 specification.
@@ -1011,7 +1035,7 @@ requirements **MUST** also be available during the `test` phase.
   make          | configure, runtime, build
   make test     | configure, runtime, build, test
 
-Consumers that install the [Package](#package) provided by the
+[Consumers](#consumer) that install the [Package](#package) provided by the
 [Distribution](#source-distribution) **MUST** ensure that *runtime*
 requirements are also installed and **MAY** install dependencies from other
 phases.
@@ -1050,7 +1074,7 @@ phases.
 *   **requires**: These dependencies **MUST** be installed for proper
     completion of the phase.
 
-*   **recommends**: **RECOMMENDED** dependencies are *strongly* encouraged and
+*   **recommends**: These dependencies are *strongly* encouraged and
     **SHOULD** be satisfied except in resource constrained environments.
 
 *   **suggests**: These dependencies are **OPTIONAL**, are suggested for
@@ -1070,9 +1094,9 @@ packaged with distributions as the file `META.json`.
 
 This design adds significant complexity over and above that provided by the
 [v1 spec](0001-meta-spec-v1.md). The features and services planned for PGXN,
-including automated binary packaging require that complexity, however. That
-said, the [v1 spec](0001-meta-spec-v1.md) remains valid and can continue to be
-used by projects unless they need additional metadata to support new features.
+including automated binary packaging, require that complexity. That said, the
+[v1 spec](0001-meta-spec-v1.md) remains valid and can continue to be used by
+projects unless they need additional metadata to support new features.
 
 We plan to develop an [SDK] and [CLI] to reduce or eliminate the toil of
 maintaining the metadata, and to automate conversion from the [v1
@@ -1082,13 +1106,13 @@ spec](0001-meta-spec-v1.md) when new features are needed.
 
 There are currently no developer-focused alternatives to the PGXN Meta Spec.
 Other extension registries, such as  [Trunk], [PGXMan], [StackBuilder], and
-the community [Yum] and Apt repositories decouple maintenance of build
+the community [Yum] and [Apt] repositories decouple maintenance of build
 metadata and dependencies, in particular, from the developer. Instead they're
-independently and manually managed by volunteers or employees of teh companies
-who developed them.
+independently and manually managed by volunteers or employees of the companies
+who develope and maintain them.
 
 They also tend to have formats specific to the platforms they serve, rather
-than to PostgreSQL specifically.
+than to PostgreSQL generally.
 
 Without this metadata, it would be difficult to develop a cross-platform,
 community binary packaging registry of all PGXN distributions. With this
@@ -1101,13 +1125,16 @@ create pull requests for the original projects.
 
 The PGXN Meta Spec v2 is based on the [v1 spec](0001-meta-spec-v1.md), which
 is itself based on the [CPAN Meta Spec]. Dependency specification is inspired
-by the [purl spec] and [Repology], as well as the [RPM Packaging Guidelines].
+by the [purl spec] and [Repology], and the [RPM Packaging Guidelines].
 
 ## Unresolved questions
 
 *   Can we rely on [Repology] to resolve system dependencies?
-*   How, exactly, do we configure loadable modules, esp when used with an
-    extension?
+*   How, exactly, do we configure loadable modules, especially when used with
+    an extension?
+*   How do we properly annotate module pre-loading? How do we handle load
+    order issues (such as one module depending on another)? Or optional
+    pre-loading?
 *   Is it better to bundle dependencies into a package as loadable modules, or
     to create separate distributions that just contain the loadable modules
     and depend on them?
@@ -1130,13 +1157,18 @@ by the [purl spec] and [Repology], as well as the [RPM Packaging Guidelines].
 ## Future possibilities
 
 Successful adoption of this standard will mean most extensions use it to
-distribute on PGXN. We'll separately need an initiative to work with extension
-authors to onboard them into PGXN, perhaps by pull requests adding the
-metadata and CI workflows.
+distribute on [PGXN]. We'll separately need an initiative to work with
+extension authors to onboard them into PGXN, perhaps by pull requests adding
+the metadata and CI workflows.
 
 Or perhaps in the future we'll be able to recognize extensions on GitHub and
 other repositories and automatically index them. Seems tricky without
 [Go-style module paths].
+
+The real success of this standard will be apparent in binary distribution
+automation. The goal is for the metadata to be sufficient sufficient to
+automate dependency resolution and binary packaging of 99% of the
+distributions on PGXN.
 
 ## See Also ##
 
@@ -1159,8 +1191,6 @@ David Golden, Ricardo Signes, Adam Kennedy, and contributors.
   [CC BY-SA 4.0]: https://creativecommons.org/licenses/by-sa/4.0/ "Attribution-Sharealike 4.0 International"
   [Github Flavored Markdown]: https://github.github.com/gfm/
   [Markdown]: https://daringfireball.net/projects/markdown/
-  [master.pgxn.org/meta/spec.txt]: https://master.pgxn.org/meta/spec.txt
-  [pgxn.org/spec/]: https://pgxn.org/spec/
   [archive file]: https://en.wikipedia.org/wiki/Archive_file
     "Wikipedia: “Archive file”"
   [`semver`]: https://pgxn.org/dist/semver/
@@ -1187,6 +1217,7 @@ David Golden, Ricardo Signes, Adam Kennedy, and contributors.
     "PostgreSQL Docs: Background Worker Processes"
   [loadable modules]: https://www.postgresql.org/docs/16/gist-extensibility.html
   [gitignore format]: https://git-scm.com/docs/gitignore
+  [fnmatch]: https://www.man7.org/linux/man-pages/man3/fnmatch.3.html
   [bulid farm animals]: https://buildfarm.postgresql.org/cgi-bin/show_members.pl
   [configure flags]: https://www.postgresql.org/docs/current/install-make.html#CONFIGURE-OPTIONS-FEATURES
   [Repology API]: https://repology.org/api "Repology, the packaging hub: API"
