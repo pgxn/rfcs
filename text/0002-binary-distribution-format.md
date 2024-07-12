@@ -121,11 +121,9 @@ Parsing of the file name takes place in four parts:
 2.  Split the name into two parts at the `+` sign. The left part is the
     package name and [SemVer]. The right part is the platform specification.
 
-3.  For the left part, split on the right-most dash. If the string to the
-    right of the dash is a valid [SemVer], then the left part is the package
-    name. If the right string is not a valid [SemVer], try again at the second
-    right-most dash and check again. Continue until a valid SemVer is produced
-    or else fail.
+3.  For the left part, read the package name, including dashes (`-`), until a
+    digit follows a dash. This dash indicates the end of the package name and
+    the start of the [SemVer].
 
 4.  Split the right string on dashes. There will be between two and four
     values as follows:
