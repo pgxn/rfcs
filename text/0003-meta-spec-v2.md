@@ -177,7 +177,7 @@ on the [gitignore format] and [fnmatch], is as follows:
     only match directories, otherwise the pattern can match both files and
     directories.
 *   An asterisk `(*)` matches anything except a slash. The character `?`
-    matches any one character except `/` The range notation, e.g. [a-zA-Z],
+    matches any one character except `/` The range notation, e.g., `[a-zA-Z]`,
     can be used to match one of the characters in a range.
 
 #### SemVer ####
@@ -185,7 +185,7 @@ on the [gitignore format] and [fnmatch], is as follows:
 A *SemVer* is a [String](#string) containing a value that describes the
 version number of extensions or distributions, and adheres to the format of
 the [Semantic Versioning 2.0.0 Specification][semver] with the exception of
-[Build metadata], which is reserved for use by downstream packaging systems.
+[build metadata], which is reserved for use by downstream packaging systems.
 
 #### Version Range ####
 
@@ -1208,11 +1208,14 @@ David Golden, Ricardo Signes, Adam Kennedy, and contributors.
   [purl Types]: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst
     "Package URL Type definitions"
   [semver]: https://semver.org/
+  [build metadata]: https://semver.org/#spec-item-10
   [SPDX License List]: https://github.com/spdx/license-list-data/
   [SPDX Standard License Expression]: https://spdx.github.io/spdx-spec/v3.0/annexes/SPDX-license-expressions/
   [control file]: https://www.postgresql.org/docs/current/extend-extensions.html
   [trusted language extension]: https://github.com/aws/pg_tle
     "pg_tle: Framework for building trusted language extensions for PostgreSQL"
+  [extensions]: https://www.postgresql.org/docs/current/sql-createextension.html
+    "PostgreSQL Docs: CREATE EXTENSION"
   [background workers]: https://www.postgresql.org/docs/current/bgworker.html
     "PostgreSQL Docs: Background Worker Processes"
   [loadable modules]: https://www.postgresql.org/docs/16/gist-extensibility.html
@@ -1237,3 +1240,10 @@ David Golden, Ricardo Signes, Adam Kennedy, and contributors.
   [Repology]: https://repology.org/ "Repology, the packaging hub"
   [RPM Packaging Guidelines]: https://docs.fedoraproject.org/en-US/packaging-guidelines/
   [Go-style module paths]: https://go.dev/ref/mod#module-path
+  [arm64]: https://en.wikipedia.org/wiki/AArch64 "Wikipedia: AArch64"
+  [amd64]: https://en.wikipedia.org/wiki/amd64 "Wikipedia: AMD64"
+  [Trunk]: https://pgt.dev "Trunk — A Postgres Extension Registry"
+  [PGXMan]: https://pgxman.com/ "npm for PostgreSQL"
+  [StackBuilder]: https://www.enterprisedb.com/docs/supported-open-source/postgresql/installing/using_stackbuilder/
+  [Apt]: https://wiki.postgresql.org/wiki/Apt "PostgreSQL packages for Debian and Ubuntu"
+  [Yum]: https://yum.postgresql.org "PostgreSQL Yum Repository"
