@@ -70,8 +70,8 @@ together.
 An [archive file] of the source code for the release of single version of a
 [Package](#package), together with metadata defined by this spec, distributed
 for other DBAs, packagers, and developers to build, install, and use. The file
-name of a Source Distribution consists of the [Package Name](#package-name), a
-dash, and the [SemVer](#semver) version, e.g., `pgtap-1.14.3.zip`.
+name of a Source Distribution consists of the Package [Name](#name), a dash,
+and the [SemVer](#semver) version, e.g., `pgtap-1.14.3.zip`.
 
 Usually referred to as a "Distribution", including in this document. The full
 term "Source Distribution" is used where necessary to distinguish from binary
@@ -133,16 +133,8 @@ Object's values **MAY** be of mixed types.
 #### Term ####
 
 A *Term* is a [String](#string) that **MUST** be at least two characters long,
-and contain no slash (`/`), backslash (`\`), control, or space characters.
-
-#### Package Name ####
-
-A *Package Name* is a [String](#string) with the following constraints:
-
-*   **MUST** be at least two characters long.
-*   **MUST NOT** start with a digit or include a digit after a dash (`-`)
-*   **MUST NOT** contain  slash (`/`), backslash (`\`), control, or space
-    characters.
+and contain no slash (`/`), backslash (`\`), dot (`.`), control, or space
+characters.
 
 #### Tag ####
 
@@ -544,13 +536,12 @@ The following properties are valid, but only `version` is **REQUIRED**.
 #}
 ```
 
-(Spec 1) [required] {[Package Name](#package-name)}
+(Spec 1) [required] {[Term](#term)}
 
 This property is the name of the [Package](#package) provided by the
 [Distribution](#source-distribution). This is usually the same as the name of
 the "main extension" in the [contents](#contents) of the [Package](#package),
-but **MAY** be different to comply with the [Package Name](#package-name)
-constraints, or be completely unrelated. This value will be used in the
+but **MAY** be completely unrelated. This value will be used in the
 [Distribution](#source-distribution) file name on [PGXN].
 
 ##### version #####
