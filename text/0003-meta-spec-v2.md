@@ -168,7 +168,7 @@ on the [gitignore format] and [fnmatch], is as follows:
 *   If there is a separator at the end of the pattern then the pattern will
     only match directories, otherwise the pattern can match both files and
     directories.
-*   An asterisk `(*)` matches anything except a slash. The character `?`
+*   An asterisk (`*`) matches anything except a slash. The character `?`
     matches any one character except `/` The range notation, e.g., `[a-zA-Z]`,
     can be used to match one of the characters in a range.
 
@@ -224,7 +224,7 @@ development packages. Versions appearing after a `@` are valid but ignored.
 Some examples:
 
 *   `pkg:pgxn/pgtap`
-*   `pkg:postgres:pg_regress`
+*   `pkg:postgres/pg_regress`
 *   `pkg:generic/python3`
 *   `pkg:pypi/pyarrow@11.0.0`
 
@@ -235,9 +235,10 @@ one to three dash-delimited substrings: An OS name, the OS version, and the
 architecture: `$os-$version-$architecture`.
 
 If the string contains no dash, it represents only the OS. If it contains a
-single dash, the values represent the OS and the architecture. The complete
-list of values will be derived from the [bulid farm animals] in another RFC.
-Some likely Examples:
+single dash, the first value represents the OS and second value is a version
+if it starts with an integer followed by a dot and the architecture if it does
+not start with a digit. The complete list of values will be derived from the
+[bulid farm animals] in another RFC. Some likely Examples:
 
 *   `any`: Any platform
 *   `linux`: Any Linux
@@ -1209,7 +1210,7 @@ David Golden, Ricardo Signes, Adam Kennedy, and contributors.
     "PostgreSQL Docs: CREATE EXTENSION"
   [background workers]: https://www.postgresql.org/docs/current/bgworker.html
     "PostgreSQL Docs: Background Worker Processes"
-  [loadable modules]: https://www.postgresql.org/docs/16/gist-extensibility.html
+  [loadable modules]: https://www.postgresql.org/docs/current/sql-load.html
   [gitignore format]: https://git-scm.com/docs/gitignore
   [fnmatch]: https://www.man7.org/linux/man-pages/man3/fnmatch.3.html
   [bulid farm animals]: https://buildfarm.postgresql.org/cgi-bin/show_members.pl
