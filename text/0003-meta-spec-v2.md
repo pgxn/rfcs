@@ -82,8 +82,8 @@ distributions of a [Package](#package), as in
 
 A software component that extends the capabilities of or experience using a
 PostgreSQL database or cluster. Extensions **MAY** be `CREATE EXTENSION`
-[extensions], [background workers], command-line apps, [loadable modules],
-shared libraries, and more.
+[extensions], [background workers][bgw], [hooks][hook], command-line apps, and
+more.
 
 #### Consumer ####
 
@@ -395,7 +395,7 @@ interpretation of those licenses.
   "contents": {
     "modules": {
       "my_worker": {
-        "type": "worker",
+        "type": "bgw",
         "lib": "lib/my_bgw",
         "doc": "doc/my_bgw.md",
         "preload": "server",
@@ -442,7 +442,7 @@ interpretation of those licenses.
   },
   "modules": {
     "pg_partman_bgw": {
-      "type": "worker",
+      "type": "bgw",
       "lib": "src/pg_partman_bgw",
       "preload": "server"
     }
@@ -492,11 +492,14 @@ present in the `contents` object. The properties are as follows:
         the extension.
     *   **tle**: A [Boolean](#boolean) that, when `true`, indicates that the
         extension can be used as a [trusted language extension].
-*   **modules**: [Objects](#object) describing [loadable modules] that can be
-    loaded into PostgreSQL. Properties are module name [Terms](#term) pointing
-    to [Objects](#object) with the following properties:
+*   **modules**: [Objects](#object) describing [loadable modules] (a.k.a.,
+    shared library) that can be loaded into PostgreSQL. Properties are module
+    name [Terms](#term) pointing to [Objects](#object) with the following
+    properties:
     *   **type**: A [Term](#term) identifying the type of the module, one of
-        "extension", "worker", or "hook". **REQUIRED**.
+        "extension" for a module supporting a `CREATE EXTENSION` extension,
+        "bgw" for a [background worker][bgw], or "hook" for a [hook].
+        **REQUIRED**.
     *   **lib**: A [Path](#path) pointing to the shared object file, without
         the suffix. **REQUIRED**.
     *   **doc**: A [Path](#path) pointing to the main documentation file for
@@ -504,7 +507,7 @@ present in the `contents` object. The properties are as follows:
     *   **abstract**: A [String](#string) containing a short description of
         the module.
     *   **preload**: A [String](#string) that indicates that the extension's
-        libraries **MAY** be loaded in advance. Its three possible values are:
+        libraries **MAY** be loaded in advance. Its two possible values are:
         `server` if the module requires loading on server start, and `session`
         if the module can be loaded in a session. Omit this field if the
         module does not require preloading.
@@ -523,7 +526,7 @@ present in the `contents` object. The properties are as follows:
         the app.
     *   **lib**: A [Path](#path) pointing to a directory of additional files
         to install, such as support libraries or modules.
-    *   **man**: A [Path](#path) pointing to a manpage or directory of
+    *   **man**: A [Path](#path) pointing to a man page or directory of
         man pages created by the build process.
     *   **html**: A [Path](#path) pointing to an HTML file or directory of
         HTML files created by the build process.
@@ -1236,8 +1239,10 @@ David Golden, Ricardo Signes, Adam Kennedy, and contributors.
     "pg_tle: Framework for building trusted language extensions for PostgreSQL"
   [extensions]: https://www.postgresql.org/docs/current/sql-createextension.html
     "PostgreSQL Docs: CREATE EXTENSION"
-  [background workers]: https://www.postgresql.org/docs/current/bgworker.html
+  [bgw]: https://www.postgresql.org/docs/current/bgworker.html
     "PostgreSQL Docs: Background Worker Processes"
+  [hook]: https://wiki.postgresql.org/wiki/PostgresServerExtensionPoints#Hooks
+    "PostgreSQL Wiki: Hooks"
   [loadable modules]: https://www.postgresql.org/docs/current/sql-load.html
   [gitignore format]: https://git-scm.com/docs/gitignore
   [fnmatch]: https://www.man7.org/linux/man-pages/man3/fnmatch.3.html
