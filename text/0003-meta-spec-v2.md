@@ -379,11 +379,11 @@ interpretation of those licenses.
   "contents": {
     "extensions": {
       "pair": {
-        "sql": "sql/pair.sql",
+        "control": "pair.control",
+        "sql": "pair-1.2.0.sql",
         "doc": "doc/pair.md",
         "abstract": "A key/value pair data type",
-        "tle": true,
-        "control": "pair.control"
+        "tle": true
       }
     }
   }
@@ -393,19 +393,20 @@ interpretation of those licenses.
 ``` json
 #{
   "contents": {
-    "workers": {
-      "pair_pruner": {
-        "bin": "bin/pair_pruner",
-        "doc": "doc/pair_pruner.md",
-        "abstract": "A worker to periodically prune pairs"
-      }
-    },
     "modules": {
-      "lib_pair": {
-        "lib": "lib/lib_pair",
-        "doc": "doc/lib_pair.md",
-        "abstract": "A library hooking function calls to convert pairs to named parameters",
-        "preload": "session"
+      "my_worker": {
+        "type": "worker",
+        "lib": "lib/my_bgw",
+        "doc": "doc/my_bgw.md",
+        "preload": "server",
+        "abstract": "My background worker"
+      },
+      "my_hook": {
+        "type": "hook",
+        "lib": "lib/my_hook",
+        "doc": "doc/my_hook.md",
+        "preload": "session",
+        "abstract": "My hook"
       }
     }
   }
@@ -416,17 +417,51 @@ interpretation of those licenses.
 #{
   "contents": {
     "apps": {
-      "pair_rand": {
-        "bin": "bin/pair_rand",
-        "doc": "doc/pair_rand.md",
-        "abstract": "Command to generate random pairs of strings"
-      }
+      "my_app": {
+        "lang": "perl",
+        "bin": "blib/script/app",
+        "lib": "blib/lib",
+        "man": "blib/libdoc",
+        "html": "blib/libhtml",
+        "doc": "doc/app.md",
+        "abstract": "blah blah blah"
+    }
+  }
+#}
+```
+
+``` json
+#{
+  "extensions": {
+    "pg_partman": {
+      "control": "pg_partman.control",
+      "sql": "sql/types/types.sql",
+      "doc": "doc/pg_partman.md",
+      "abstract": "Extension to manage partitioned tables by time or ID"
+    }
+  },
+  "modules": {
+    "pg_partman_bgw": {
+      "type": "worker",
+      "lib": "src/pg_partman_bgw",
+      "preload": "server"
+    }
+  },
+  "apps": {
+    "check_unique_constraint": {
+      "lang": "python",
+      "bin": "bin/common/check_unique_constraint.py",
+      "abstract": "Check that all rows in a partition set are unique for the given columns"
     },
-    "libraries": {
-      "ruby_pair": {
-        "dir": "lib/gems",
-        "abstract": "Ruby libraries required to run the extension"
-      }
+    "dump_partition": {
+      "lang": "python",
+      "bin": "bin/common/dump_partition.py",
+      "abstract": "Dump out and then drop all tables contained in a schema."
+    },
+    "vacuum_maintenance": {
+      "lang": "python",
+      "bin": "bin/common/vacuum_maintenance.py",
+      "abstract": "Performing vacuum maintenance on to avoid excess vacuuming and transaction id wraparound issues"
     }
   }
 #}
@@ -437,7 +472,8 @@ interpretation of those licenses.
 A description of what's included in the [Package](#package) provided by the
 [Distribution](#source-distribution). This information is used by [PGXN] to
 build indexes identifying in which [Package](#package) various
-[Extensions](#extension) can be found.
+[Extensions](#extension) can be found, and to create binary distribution
+packages.
 
 The properties of `contents` identify the types of [Extensions](#extension) in
 the [Distribution](#source-distribution). At least one property **MUST** be
@@ -446,59 +482,51 @@ present in the `contents` object. The properties are as follows:
 *   **extensions**: [Object](#object) describing `CREATE EXTENSION`
     [extensions]. Properties are extension name [Terms](#term) pointing to
     [Objects](#object) with the following fields:
-    *   **sql**: A [Path](#path) pointing to the SQL file used by `CREATE
-        EXTENSION`. **REQUIRED**.
     *   **control**: A [Path](#path) pointing to the [control file] used by
         `CREATE EXTENSION`. **REQUIRED**.
+    *   **sql**: A [Path](#path) pointing to the main SQL file, usually the
+        one used by `CREATE EXTENSION`. **REQUIRED**.
     *   **doc**: A [Path](#path) pointing to the main documentation file for
         the extension, which **SHOULD** be more than a README.
     *   **abstract**: A [String](#string) containing a short description of
         the extension.
     *   **tle**: A [Boolean](#boolean) that, when `true`, indicates that the
         extension can be used as a [trusted language extension].
-*   **workers**: [Object](#object) describing [background workers]. Properties
-    are worker name [Terms](#term) pointing to [Objects](#object) with the
-    following properties:
-    *   **src**: A [Path](#path) pointing to the main source file for the
-        background worker. **REQUIRED**.
-    *   **doc**: A [Path](#path) pointing to the main documentation file for
-        the background worker, which **SHOULD** be more than a README.
-    *   **abstract**: A [String](#string) containing a short description of
-        the background worker.
-*   **apps**: [Objects](#object) describing applications, command-line or
-    otherwise. Properties are are app name [Terms](#term) pointing to
-    [Objects](#object) with the following properties:
-    *   **src**: A [Path](#path) pointing to the main source file for the app.
-        **REQUIRED**.
-    *   **doc**: A [Path](#path) pointing to the main documentation file for
-        the app, which **SHOULD** be more than a README.
-    *   **abstract**: A [String](#string) containing a short description of
-        the app.
 *   **modules**: [Objects](#object) describing [loadable modules] that can be
     loaded into PostgreSQL. Properties are module name [Terms](#term) pointing
     to [Objects](#object) with the following properties:
-    *   **src**: A [Path](#path) pointing to the main source file for the
-        module. **REQUIRED**.
+    *   **type**: A [Term](#term) identifying the type of the module, one of
+        "extension", "worker", or "hook". **REQUIRED**.
+    *   **lib**: A [Path](#path) pointing to the shared object file, without
+        the suffix. **REQUIRED**.
     *   **doc**: A [Path](#path) pointing to the main documentation file for
         the module, which **SHOULD** be more than a README.
     *   **abstract**: A [String](#string) containing a short description of
         the module.
     *   **preload**: A [String](#string) that indicates that the extension's
         libraries **MAY** be loaded in advance. Its three possible values are:
-        `shared`, `session`, and `local`. Extensions that require early or
-        late loading of their module **MAY** optionally append a space and
-        then either `early` or `late`.
-*   **libraries**: [Objects](#object) listing other libraries that **MAY**
-    ship in the package and need to be installed but are not [loadable
-    modules], such as a dynamic library used by an app. Properties are library
-    name [Terms](#term) pointing to [Objects](#object) with the following
-    properties:
-    *   **src**: A [Path](#path) pointing to the main source file or directory
-        of files for the library. **REQUIRED**.
+        `server` if the module requires loading on server start, and `session`
+        if the module can be loaded in a session. Omit this field if the
+        module does not require preloading.
+*   **apps**: [Objects](#object) describing applications, command-line or
+    otherwise. Properties are are app name [Terms](#term) pointing to
+    [Objects](#object) with the following properties:
+    *   **bin**: A [Path](#path) pointing to the application. This file need
+        not be present in the distribution, but should be present once the
+        package has been built.  **REQUIRED**.
+    *   **lang**: A [Term](#term) indicating the implementation language.
+        Required for apps that need the `'#!{cmd}` shebang line modified
+        before installing.
     *   **doc**: A [Path](#path) pointing to the main documentation file for
-        the library, which **SHOULD** be more than a README.
+        the app, which **SHOULD** be more than a README.
     *   **abstract**: A [String](#string) containing a short description of
         the app.
+    *   **lib**: A [Path](#path) pointing to a directory of additional files
+        to install, such as support libraries or modules.
+    *   **man**: A [Path](#path) pointing to a manpage or directory of
+        man pages created by the build process.
+    *   **html**: A [Path](#path) pointing to an HTML file or directory of
+        HTML files created by the build process.
 
 ##### meta-spec #####
 
