@@ -153,11 +153,11 @@ Locator as defined by [IETF RFC 3986].
 in the [Distribution](#source-distribution). The path **MUST** be specified
 with Unix conventions.
 
-#### Path Pattern ####
+#### Glob ####
 
-*Path Pattern* is a [String](#string) that defines a pattern to identify one
-or more files in the [Distribution](#source-distribution). Its format, based
-on the [gitignore format] and [fnmatch], is as follows:
+*Glob* is a [String](#string) that defines a pattern to identify one or more
+files in the [Distribution](#source-distribution). Its format, based on the
+[gitignore format] and [fnmatch], is as follows:
 
 *   The slash (`/`) is used as the directory separator. Separators may occur
     at the beginning, middle or end of the pattern.
@@ -425,6 +425,7 @@ interpretation of those licenses.
         "html": "blib/libhtml",
         "doc": "doc/app.md",
         "abstract": "blah blah blah"
+      }
     }
   }
 #}
@@ -432,36 +433,38 @@ interpretation of those licenses.
 
 ``` json
 #{
-  "extensions": {
-    "pg_partman": {
-      "control": "pg_partman.control",
-      "sql": "sql/types/types.sql",
-      "doc": "doc/pg_partman.md",
-      "abstract": "Extension to manage partitioned tables by time or ID"
-    }
-  },
-  "modules": {
-    "pg_partman_bgw": {
-      "type": "bgw",
-      "lib": "src/pg_partman_bgw",
-      "preload": "server"
-    }
-  },
-  "apps": {
-    "check_unique_constraint": {
-      "lang": "python",
-      "bin": "bin/common/check_unique_constraint.py",
-      "abstract": "Check that all rows in a partition set are unique for the given columns"
+  "contents": {
+    "extensions": {
+      "pg_partman": {
+        "control": "pg_partman.control",
+        "sql": "sql/types/types.sql",
+        "doc": "doc/pg_partman.md",
+        "abstract": "Extension to manage partitioned tables by time or ID"
+      }
     },
-    "dump_partition": {
-      "lang": "python",
-      "bin": "bin/common/dump_partition.py",
-      "abstract": "Dump out and then drop all tables contained in a schema."
+    "modules": {
+      "pg_partman_bgw": {
+        "type": "bgw",
+        "lib": "src/pg_partman_bgw",
+        "preload": "server"
+      }
     },
-    "vacuum_maintenance": {
-      "lang": "python",
-      "bin": "bin/common/vacuum_maintenance.py",
-      "abstract": "Performing vacuum maintenance on to avoid excess vacuuming and transaction id wraparound issues"
+    "apps": {
+      "check_unique_constraint": {
+        "lang": "python",
+        "bin": "bin/common/check_unique_constraint.py",
+        "abstract": "Check that all rows in a partition set are unique for the given columns"
+      },
+      "dump_partition": {
+        "lang": "python",
+        "bin": "bin/common/dump_partition.py",
+        "abstract": "Dump out and then drop all tables contained in a schema."
+      },
+      "vacuum_maintenance": {
+        "lang": "python",
+        "bin": "bin/common/vacuum_maintenance.py",
+        "abstract": "Performing vacuum maintenance on to avoid excess vacuuming and transaction id wraparound issues"
+      }
     }
   }
 #}
@@ -669,7 +672,7 @@ following properties:
     *   Security
     *   Tooling and Admin
 
-#### ignore ####
+##### ignore #####
 
 ``` json
 #{
@@ -681,7 +684,7 @@ following properties:
 #}
 ```
 
-(Spec 2) [optional] {[Array](#Array) of [Path Patterns](#path-pattern)}
+(Spec 2) [optional] {[Array](#Array) of [Globs](#glob)}
 
 This [Array](#array) describes any files or directories that are private to
 the [Distribution](#source-distribution) and **SHOULD** be ignored by indexing
@@ -785,7 +788,7 @@ or search tools.
             "pkg:generic/python3": 0,
             "pkg:generic/readline": 0,
             "pkg:generic/openssl": 0,
-            "pkg:generic/bison"
+            "pkg:generic/bison": 0
         },
         "recommends": {
             "pkg:pypi/pyarrow": "11.0.0",
@@ -846,7 +849,7 @@ Properties:
         supported versions of PostgreSQL. **REQUIRED**.
     *   **with**: An [Array](#array) of [Terms](#term) that specify features
         that are required to be compiled into PostgreSQL. Each corresponds to
-        the appropriate `--with` [configure flags]. **OPTIONAL**.
+        the appropriate `--with` [configure flag]. **OPTIONAL**.
 
 *   **pipeline**: A [Term](#term) identifying the build pipeline required to
     configure, build, test, and install the [Package](#package) provided by
@@ -861,19 +864,19 @@ Properties:
     *   cpan
     *   pip
     *   go
-    *   rust
+    *   cargo
 
     If this field is not present, [Consumers](#consumer) **MAY** use
     heuristics to ascertain the pipeline to use, such as the presence or
     absence of a `configure.sh`, `Makefile`, or `Cargo.toml` file.
 
 *   **packages**: An [Object](#object) defining dependencies required for
-    different phases of the build process. The supported property names are
-    `configure`, `build`, `test`, `run`, and `develop`. Values are
-    [Objects](#object) with at least one of the properties `requires`,
-    `recommends`, `suggests`, and `conflicts` pointing to [Objects](#object)
-    with [purls](#purl) property keys pointing to [Version
-    Range](#version-range) values.
+    different phases of the build process, runtime, and development. The
+    supported property names are `configure`, `build`, `test`, `run`, and
+    `develop`. Values are [Objects](#object) with at least one of the
+    properties `requires`, `recommends`, `suggests`, and `conflicts` pointing
+    to [Objects](#object) with [purls](#purl) property keys pointing to
+    [Version Range](#version-range) values.
 
     See the [Package Spec](#packages-spec) for the full definition of this
     property.
@@ -902,7 +905,8 @@ Properties:
     "badges": [
       {
         "alt": "Test Status",
-        "src": "https://test.packages.postgresql.org/github.com/example/pair.svg"
+        "src": "https://github.com/theory/kv-pair/workflows/CI/badge.svg",
+        "url": "https://test.packages.postgresql.org/github.com/example"
       }
     ]
   }
@@ -927,9 +931,11 @@ properties:
     package.
 *   **badges**: An [Array](#array) of [Objects](#object) linking to badge
     images that **SHOULD** follow the [Shields badge specification]. It
-    **MUST** have at least one entry, and all entries require two properties:
-    *   **src**: The [URI](#uri) for the badge.
-    *   **alt**: Alternate text for accessability.
+    **MUST** have at least one entry, and all entries support these
+    properties:
+    *   **src**: The [URI](#uri) for the badge. **REQUIRED.**
+    *   **alt**: Alternate text for accessability. **REQUIRED**
+    *   **url**: The URL the badge links to.
 
 ##### artifacts #####
 
@@ -1247,7 +1253,7 @@ David Golden, Ricardo Signes, Adam Kennedy, and contributors.
   [gitignore format]: https://git-scm.com/docs/gitignore
   [fnmatch]: https://www.man7.org/linux/man-pages/man3/fnmatch.3.html
   [bulid farm animals]: https://buildfarm.postgresql.org/cgi-bin/show_members.pl
-  [configure flags]: https://www.postgresql.org/docs/current/install-make.html#CONFIGURE-OPTIONS-FEATURES
+  [configure flag]: https://www.postgresql.org/docs/current/install-make.html#CONFIGURE-OPTIONS-FEATURES
   [Repology API]: https://repology.org/api "Repology, the packaging hub: API"
   [contrib]: https://www.postgresql.org/docs/current/contrib.html
   [auto_explain]: https://www.postgresql.org/docs/current/auto-explain.html
