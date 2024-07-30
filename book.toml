@@ -16,3 +16,6 @@ heading-split-level = 0
 
 [output.html.playground]
 runnable = false
+
+[output.html.code.hidelines]
+json = "#"
