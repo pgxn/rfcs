@@ -18,9 +18,9 @@
 
 This document describes version 2.0.0 of the [PGXN] source distribution
 metadata specification, also known as the "PGXN Meta Spec." PGXN metadata
-ships with PGXN source distribution archives, and serves to describe the their
-contents for the benefit of automated indexing, distribution, discovery,
-full-text search, binary packaging, and more.
+ships with PGXN source distribution archives in a fila named `META.json`, and
+serves to describe the their contents for the benefit of automated indexing,
+distribution, discovery, full-text search, binary packaging, and more.
 
 ## Introduction
 
@@ -151,7 +151,8 @@ Locator as defined by [IETF RFC 3986].
 
 *Path* is a [String](#string) with a relative file path that identifies a file
 in the [Distribution](#source-distribution). The path **MUST** be specified
-with Unix conventions.
+with Unix conventions. It may begin with a slash, but will still be considered
+relative to the directory containing the `META.json` file.
 
 #### Glob ####
 
@@ -1044,11 +1045,11 @@ supports only OSes that provide such packages. See the "variations" property
 of the [dependencies](#dependencies) object for platform-specific dependency
 specification.
 
-[Consumers](#consumer) **SHOULD** use [Repology] to resolve `pkg:generic`
-[purls](#purl) to packages specific to the platform on which an extension is
-being built. This is useful for specifying system dependencies that vary by
-name and packaging system. Otherwise, they **MAY** use whatever techniques or
-heuristics are appropriate to install dependencies.
+[Consumers](#consumer) **SHOULD** use the [Repology API] to resolve
+`pkg:generic` [purls](#purl) to packages specific to the platform on which an
+extension is being built. This is useful for specifying system dependencies
+that vary by name and packaging system. Otherwise, they **MAY** use whatever
+techniques or heuristics are appropriate to install dependencies.
 
 #### Phases ####
 
