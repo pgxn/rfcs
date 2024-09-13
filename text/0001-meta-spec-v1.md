@@ -7,6 +7,9 @@
 *   **Category:** Packaging
 *   **Pull Request:** [pgxn/rfcs#1](https://github.com/pgxn/rfcs/pull/1)
 
+> **Note:** This RFC has been superseded by [RFC--3](0003-meta-spec-v2.md).
+> However, it remains fully supported by the PGXN toolchain.
+
 Name
 ====
 
