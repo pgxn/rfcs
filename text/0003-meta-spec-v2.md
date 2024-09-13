@@ -365,7 +365,7 @@ to or instead of the original author.
 #}
 ```
 
-(Spec 1) [required] {[License Expression](#license-expression)}
+(Spec 2) [required] {[License Expression](#license-expression)}
 
 One or more licenses that apply to some or all of the files in the
 [Distribution](#source-distribution). For [License
@@ -471,7 +471,7 @@ interpretation of those licenses.
 #}
 ```
 
-(Spec 1) [required] {[Object](#object) of [Objects](#object) of [Terms](#term)}
+(Spec 2) [required] {[Object](#object) of [Objects](#object) of [Terms](#term)}
 
 A description of what's included in the [Package](#package) provided by the
 [Distribution](#source-distribution). This information is used by [PGXN] to
@@ -546,7 +546,7 @@ present in the `contents` object. The properties are as follows:
 #}
 ```
 
-(Spec 1) [required] {[Map](#Map)}
+(Spec 2) [required] {[Map](#Map)}
 
 This field indicates the [SemVer](#semver) of the PGXN Meta Spec that
 **SHOULD** be used to interpret the metadata. [Consumers](#consumer) **MUST**
@@ -946,17 +946,17 @@ properties:
     {
       "type": "source",
       "url": "https://github.com/theory/pg-pair/releases/download/v1.1.0/pair-1.1.0.zip",
-      "sha256": "2b9d2416096d2930be51e5332b70bcd97846947777a93e4a3d65fe1b5fd7b004"
+      "sha512": "862ad251d31d159b4940e0d56f6c3e951cbb0ea171370025185b335ebc8d3cb8321e912167299b885e72042955c84191ca691608a2be326e605c8efc703b67b2"
     },
     {
       "type": "binary",
       "url": "https://github.com/theory/pg-pair/releases/download/v1.1.0/pair-1.1.0-linux-amd64.tar.gz",
-      "sha1": "12d9bc5cfb6bc3c453627eac69511f48be63cfc0"
+      "sha512": "862ad251d31d159b4940e0d56f6c3e951cbb0ea171370025185b335ebc8d3cb8321e912167299b885e72042955c84191ca691608a2be326e605c8efc703b67b2"
     },
     {
       "type": "binary",
       "url": "https://github.com/theory/pg-pair/releases/download/v1.1.0/pair-1.1.0-linux-arm64.tar.gz",
-      "sha1": "787dc39137f7d1510a33ab0a1b8905cd5f3f72d1"
+      "sha512": "862ad251d31d159b4940e0d56f6c3e951cbb0ea171370025185b335ebc8d3cb8321e912167299b885e72042955c84191ca691608a2be326e605c8efc703b67b2"
     }
   ]
 #}
@@ -964,7 +964,7 @@ properties:
 
 (Spec 2) [optional] {[Array](#array)}
 
-An [Array](#array) of [Objects](#objects) describing non-PGXN links and
+An [Array](#array) of [Objects](#object) describing non-PGXN links and
 checksums for downloading the [Distribution](#source-distribution) in one or
 more formats, including source code, binaries, system packages, etc.
 [Consumers](#consumer) **MAY** use this information to determine the best
@@ -975,8 +975,8 @@ The [Array](#array) **MUST** have at least one [Object](#object). The
 properties of each [Object](#object) are:
 
 *   **url**: A [URI](#uri) to download the artifact. **REQUIRED**.
-*   **sha256** or **sha512**: A [String](#string) containing a SHA-256 or
-    SHA-512 checksum in hex format. **REQUIRED**.
+*   **sha512**: A [String](#string) containing a SHA-512 hash digest for the
+    artifact in hex format. **REQUIRED**.
 *   **type**: The type of artifact. **MUST** be a single lowercase word
     describing the artifact, such as none of `binary`, `source`, `rpm`,
     `homebrew`, etc. **REQUIRED**.
