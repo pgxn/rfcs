@@ -84,9 +84,11 @@ would append a structure such as this to the distribution `META.json` file:
 }
 ```
 
-This example includes a PGXN release signature. The data signed is the contents
-of the `payload` property, which is the Base64 URL-encoded representation of
-this JSON object (with blank space formatting removed):
+This example includes a PGXN release signature, which is formatted in
+accordance with the [JWS JSON Serialization] format specified by [RFC
+7515][JWS]. The signed data is the contents of the `payload` property, which
+is the Base64 URL-encoded representation of this JSON object (with blank space
+formatting removed):
 
 ``` json
 {
@@ -214,8 +216,8 @@ The steps for a client to find, download, and verify a PGXN release would be:
     `dist/{name}/{version}/META.json`; for the above example, that results in
     `dist/pair/0.1.7/META.json`.
 3.  Fetch the release `META.json` file, read in the `releases/pgxn` object,
-    and use PGXN's public key to verify that it was signed by PGXN. Abort with
-    an error if validation fails.
+    and use PGXN's current public keys to verify that it was signed by PGXN.
+    Abort with an error if validation fails.
 4.  Decode the payload and use its `uri` field to download the release zip
     file.
 5.  Compare one of the digests from the payload to a digest generated from the
@@ -232,7 +234,8 @@ of trust:
 2.  A release key pair is generated and signed by the private root key, with
     the private key kept in an online vault accessible only to PGXN Manager.
 3.  The public keys for both keys are published by PGXN. Clients should embed
-    the root public key in their sources.
+    the root public key in their sources but regularly fetch and validate
+    signing keys against it.
 4.  PGXN Manager uses the private release key to sign releases as described
     above. The most important property in the signed payload is the list of
     digests.
@@ -380,8 +383,9 @@ the release file it describes.
 
 The use of [JWS] ensures a widely-vetted key signing and distribution
 standard, and the likelihood that clients can take advantage of well-tested,
-mature libraries to handle signing and validation. And finally, its design
-allows for key rotation when necessary.
+mature libraries to handle signing and validation. And finally, the use of RFC
+7515-standard [JWS JSON Serialization] allows multiple signatures, which will
+simplify key rotation.
 
 ## Future possibilities
 
@@ -438,7 +442,6 @@ the event the "release" private key was compromised.
     and use intermediate keys, we can recommend that clients include the root
     public key in their sources, so that any intermediate key breach can be
     detected.
-
 
   [PGXN]: https://pgxn.org "PostgreSQL Extension Network"
   [PGXN Manager]: https://manager.pgxn.org
