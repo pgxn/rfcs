@@ -104,8 +104,8 @@ formatting removed):
 A client **SHOULD** verify that the payload was signed by PGXN, and then use
 the URI to download the release file and verify it with the SHA-512 digest.
 This pattern ensures that, when validation is properly implemented, it is
-rooted by PGXN's private key, and therefore the distribution file can be fully
-trusted as unmodified since PGXN signed it.
+rooted by PGXN's certificate chain, and therefore the distribution file can be
+fully trusted as unmodified since PGXN signed it.
 
 ## Guide-level explanation
 
@@ -216,8 +216,9 @@ The steps for a client to find, download, and verify a PGXN release would be:
     `dist/{name}/{version}/META.json`; for the above example, that results in
     `dist/pair/0.1.7/META.json`.
 3.  Fetch the release `META.json` file, read in the `releases/pgxn` object,
-    and use PGXN's current public keys to verify that it was signed by PGXN.
-    Abort with an error if validation fails.
+    and use PGXN's current public key (downloaded as a [RFC 7517 JWK Set]) to
+    verify that it was signed by PGXN. Abort with an error if validation
+    fails.
 4.  Decode the payload and use its `uri` field to download the release zip
     file.
 5.  Compare one of the digests from the payload to a digest generated from the
@@ -233,17 +234,17 @@ of trust:
 1.  A root key pair is maintained by PGXN, with the private key kept offline.
 2.  A release key pair is generated and signed by the private root key, with
     the private key kept in an online vault accessible only to PGXN Manager.
-3.  The public keys for both keys are published by PGXN. Clients should embed
-    the root public key in their sources but regularly fetch and validate
-    signing keys against it.
+3.  The public keys for both keys are published by PGXN in a [RFC 7517 JWK
+    Set].
 4.  PGXN Manager uses the private release key to sign releases as described
     above. The most important property in the signed payload is the list of
     digests.
-5.  Clients can verify the signature with the public release and root keys.
+5.  Clients **MUST** regularly fetch the [RFC 7517 JWK Set] of public keys,
+    validate their authenticity, and use them to verify the signature.
 6.  With the data validated, the client can download and verify the release
     file against a signed digest (preference order: `sha512`, `sha256`,
     `sha1`). In this manner, the authenticity of the release file can be
-    verified all the way to the root key.
+    verified by PGXN's chain of trust to its root certificate.
 
 To support this infrastructure, PGXN Manager **MUST** be updated to properly
 generate and sign the payload and include it in the release `META.json` files.
@@ -465,3 +466,5 @@ the event the "release" private key was compromised.
   [supply chain attacks]: https://en.wikipedia.org/wiki/Supply_chain_attack
     "Wikipedia: Supply chain attack"
   [Python wheel]: https://packaging.python.org/en/latest/specifications/binary-distribution-format/
+  [RFC 7517 JWK Set]: https://datatracker.ietf.org/doc/html/rfc7517#section-5
+    "RFC 7517 JSON Web Key (JWK): JWK Set Format"
