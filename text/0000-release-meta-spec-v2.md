@@ -416,8 +416,11 @@ the event the "release" private key was compromised.
 *   Is `receipts` the best name for this new property? Other possibilities:
     *   `signatures` (might there be other kinds of certifications?)
     *   `certifications` (long, close to "certificates", which is overloaded)
+    *   `certs` (accurate, but overloaded to mean "certificates")
     *   `attestations` (abstract and too JWT-y)
     *   `jws` (dissuades other formats)
+    *   `coupons`, `authentication`, `authenticity`, `credentials`,
+        `vouchers`, `records` (meh)
 
 *   If we retain the format of keys in the `receipts` object pointing to
     signatures, should we relax the requirement that additional keys start
