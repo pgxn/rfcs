@@ -58,30 +58,36 @@ Meta Spec v2][v2] provides an opportunity to update the release `META.json`
 format with signed metadata to enable a much more secure method of validation.
 
 This RFC therefore proposes to extend [v2] distribution metadata with a single
-additional property, `release`, that contains a [JWS JSON Serialization]
-object as defined by [RFC 7515][JWS]. This property will allow clients not
-only to find the release file to download and verify against checksums, but
-also validate it against a public key provided by PGXN.
+additional property, `receipts`, that contains one or more cryptographic
+signatures or certifications that attest to the authenticity or other
+characteristics of a release on PGXN.
 
-The design allows multiple digital signatures, which in the future may allow
-authors or other entities to sign releases with their own keys. The new format
-would append a structure such as this to the distribution `META.json` file:
+The `receipts` value is an object that contains at least one property, `pgxn`,
+which itself contains a PGXN-generated [RFC 7515][JWS] JSON Web Signature in
+the [JWS JSON Serialization] format. The `pgxn` property will allow clients
+not only to find the release file to download and verify against checksums,
+but also validate it against a public key provided by PGXN.
+
+The design allows multiple signatures, certificates, or other attestations,
+which in the future **MAY** allow authors or other entities to sign releases
+with their own keys. The new format appends a structure such as this to the
+distribution `META.json` file:
 
 ``` json
-{
-  "release": {
+#{
+  "receipts": {
      "pgxn": {
        "payload": "eyJ1c2VyIjoidGhlb3J5IiwiZGF0ZSI6IjIwMjQtMDktMTNUMTc6MzI6NTVaIiwidXJpIjoiZGlzdC9wYWlyLzAuMS43L3BhaXItMC4xLjcuemlwIiwiZGlnZXN0cyI6eyJzaGE1MTIiOiJiMzUzYjVhODJiM2I1NGU5NWY0YTI4NTllN2EyYmQwNjQ4YWJjYjM1YTdjMzYxMmIxMjZjMmM3NTQzOGZjMmY4ZThlZTFmMTllNjFmMzBmYTU0ZDdiYjY0YmNmMjE3ZWQxMjY0NzIyYjQ5N2JjYjYxM2Y4MmQ3ODc1MTUxNWI2NyJ9fQ",
        "signatures": [
           {
-            "protected":"eyJhbGciOiJSUzI1NiJ9",
-            "header": {"kid": "2024-12-29" },
+            "protected": "eyJhbGciOiJSUzI1NiJ9",
+            "header": { "kid": "2024-12-29" },
             "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZES c6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
           }
        ]
      }
   }
-}
+#}
 ```
 
 This example includes a PGXN release signature, which is formatted in
@@ -180,8 +186,8 @@ The steps to publish a signed release on PGXN would be:
 
 1.  User updates the version in the `META.json` as appropriate for the
     release, then bundles the `META.json` file and all required and
-    recommended source code and documentation files into a zip file. From a
-    Git repository, for example:
+    recommended source code and documentation files into a zip archive file.
+    From a Git repository, for example:
 
     ```sh
     git archive --format zip --prefix=pair-0.1.7/ -o pair-0.1.7.zip HEAD
@@ -193,9 +199,9 @@ The steps to publish a signed release on PGXN would be:
     the uploaded file (if it doesn't have the directory prefix, for example, or
     is uploaded in some other archive format than zip).
 
-4.  PGXN Manager copies the `META.json` file, constructs the payload for
-    signing, signs with its private key, then adds the `release` object to the
-    copied `META.json` file.
+4.  PGXN Manager copies the `META.json` file out of the archive file,
+    constructs the payload for signing, signs with its private key, then adds
+    the `release` object to the copied `META.json` file.
 
 5.   PGXN Manager publishes the distribution archive and the `META.json` file
      to the root registry, along with an additional file that lists all the
@@ -203,7 +209,7 @@ The steps to publish a signed release on PGXN would be:
 
      *    Release list: `dist/pair.json`
      *    0.1.7 release `META.json`: `dist/pair/0.1.7/META.json`
-     *    0.1.7 release zip file: `dist/pair/0.1.7/pair-0.1.7.zip`
+     *    0.1.7 release archive file: `dist/pair/0.1.7/pair-0.1.7.zip`
 
 #### Installing a Release ####
 
@@ -215,7 +221,7 @@ The steps for a client to find, download, and verify a PGXN release would be:
     the URI for its release `META.json`. The format is
     `dist/{name}/{version}/META.json`; for the above example, that results in
     `dist/pair/0.1.7/META.json`.
-3.  Fetch the release `META.json` file, read in the `releases/pgxn` object,
+3.  Fetch the release `META.json` file, read in the `receipts/pgxn` object,
     and use PGXN's current public key (downloaded as a [RFC 7517 JWK Set]) to
     verify that it was signed by PGXN. Abort with an error if validation
     fails.
@@ -223,7 +229,7 @@ The steps for a client to find, download, and verify a PGXN release would be:
     file.
 5.  Compare one of the digests from the payload to a digest generated from the
     downloaded zip file.
-6.  If they digests are the same, continue with building and installing.
+6.  If the digests are the same, continue with building and installing.
     Otherwise abort with an error.
 
 ## Reference-level explanation
@@ -234,13 +240,14 @@ of trust:
 1.  A root key pair is maintained by PGXN, with the private key kept offline.
 2.  A release key pair is generated and signed by the private root key, with
     the private key kept in an online vault accessible only to PGXN Manager.
-3.  The public keys for both keys are published by PGXN in a [RFC 7517 JWK
+3.  The public keys for both keys are published by PGXN as a [RFC 7517 JWK
     Set].
 4.  PGXN Manager uses the private release key to sign releases as described
     above. The most important property in the signed payload is the list of
     digests.
 5.  Clients **MUST** regularly fetch the [RFC 7517 JWK Set] of public keys,
-    validate their authenticity, and use them to verify the signature.
+    validate their authenticity, and use them to verify `receipts/pgxn`
+    signatures.
 6.  With the data validated, the client can download and verify the release
     file against a signed digest (preference order: `sha512`, `sha256`,
     `sha1`). In this manner, the authenticity of the release file can be
@@ -250,7 +257,7 @@ To support this infrastructure, PGXN Manager **MUST** be updated to properly
 generate and sign the payload and include it in the release `META.json` files.
 Clients **MUST** follow the [JWS validation steps].
 
-### Release Object Properties
+### Receipts Object Properties
 
 ```json
 #{
@@ -267,32 +274,32 @@ Clients **MUST** follow the [JWS validation steps].
 #}
 ```
 
-The `release` property is a JSON object that supports a single key, `pgxn`. No
-other keys are allowed except [v2] custom keys, which must start with `x_` or
-`X_`.
+The `receipts` property is a JSON object that supports a single key, `pgxn`.
+No other keys are allowed except [v2] custom keys, which must start with `x_`
+or `X_`.
 
-The value for each property **MUST** be a [JWS JSON Serialization] JSON
-object, defined as follows:
+The value for the `pgxn` property **MUST** be formatted according to the [JWS
+JSON Serialization], which specifies:
 
-> *   **payload**: The "payload" member MUST be present and contain the value
->     `BASE64URL(JWS Payload)`.
+> *   **payload**: The "payload" member **MUST** be present and contain the
+>     value `BASE64URL(JWS Payload)`.
 >
-> *   **signatures**: The "signatures" member value MUST be an array of JSON
->     objects. Each object represents a signature or MAC over the JWS Payload
->     and the JWS Protected Header. Its fields are:
+> *   **signatures**: The "signatures" member value **MUST** be an array of
+>     JSON objects. Each object represents a signature or MAC over the JWS
+>     Payload and the JWS Protected Header.
 >
 > The following members are defined for use in the JSON objects that are
 > elements of the "signatures" array:
 >
 > *   **protected**: The "protected" member **MUST** be present and contain
 >     the value `BASE64URL(UTF8(JWS Protected Header))` when the JWS Protected
->     Header value is non-empty; otherwise, it MUST be absent.  These Header
->     Parameter values are integrity protected.
+>     Header value is non-empty; otherwise, it **MUST** be absent. These
+>     Header Parameter values are integrity protected.
 >
 > *   **header**: The "header" member **MUST** be present and contain the
 >     value JWS Unprotected Header when the JWS Unprotected Header value is
->     non- empty; otherwise, it MUST be absent.  This value is represented as
->     an unencoded JSON object, rather than as a string.  These Header
+>     non- empty; otherwise, it **MUST** be absent. This value is represented
+>     as an unencoded JSON object, rather than as a string. These Header
 >     Parameter values are not integrity protected.
 >
 > *   **signature**: The "signature" member **MUST** be present and contain
@@ -332,26 +339,26 @@ the following structure:
 }
 ```
 
-The format for the `payload` property in the `pgxn` JWS object is itself an
-object. When formatting into the payload, its keys must appear in order (by
-Unicode [code points] and) must contain no formatting-only blank space
-("pretty printing"), but just a single line of JSON. In other words, before
-Base64 URL-encoding the second example above, it must be formatted as:
+The format for the `payload` property is itself an object. When formatting
+into the `payload` value, its keys **MUST** appear in Unicode [code point]
+order and **MUST** contain no formatting-only blank space ("pretty printing"),
+but just a single line of JSON. In other words, before Base64 URL-encoding the
+second example above, it must be formatted as:
 
 ```json
 {"date":"2012-04-25T02:48:38Z","digests":{"sha1":"b7ecaa270e912a60e3dd919918004c6fcd4989c9"},"uri":"dist/widget/0.0.1/widget-0.0.1.zip","user":"the_grinch"}
 ```
 
-The object **MUST** contain all of these properties:
+The `pgxn` object **MUST** contain all of these properties:
 
 *   **user**: The username of the PGXN user who uploaded the release.
 *   **date**: The date of the release in [RFC 3339]/[ISO 8601] format in the
     UTC time zone (indicated by the `Z`).
 *   **uri**: The URI for the release archive, relative to a PGXN mirror root,
     in the format `dist/{name}/{version}/{name}-{version}.zip`.
-*   **digests**: An object containing hash digests for the file represented by
-    the `uri` property. It **MUST** contain *at least* one of the following
-    keys:
+*   **digests**: An object containing cryptographic hash digests for the file
+    represented by the `uri` property. It **MUST** contain *at least* one of
+    the following keys:
     *   **sha512**: A SHA-512 hash digest in hex format. Preferred.
     *   **sha256**: A SHA-256 hash digest in hex format.
     *   **sha1**: A SHA-1 hash digest in hex format. Deprecated; provided to
@@ -396,8 +403,8 @@ example, an organization that provides security scanning services may want to
 add their own signature to validate that they have tested a specific release.
 
 In the future we may also want to issue key pairs to registered developers and
-require that they sign releases, as well. This would allow an extra level of
-protection, plus allow key revocation in case an upload has been tampered
+require that they sign releases. This would allow an extra level of
+protection, as well as key revocation in case an upload has been tampered
 with.
 
 For the PGXN signing itself the proposed use of a separate, offline "root" key
@@ -406,18 +413,19 @@ the event the "release" private key was compromised.
 
 ## Unresolved questions
 
-*   Is `release` the best name for this new property? Yes the PGXN object
-    represents signed release metadata, and eventually authors may also use
-    the pattern to sign releases. But others may sign for different purposes,
-    such as the security scanning example under [Future
-    Possibilities](#future-possibilities). Should it perhaps be named
-    `signatures` or similar, instead?
+*   Is `receipts` the best name for this new property? Other possibilities:
+    *   `signatures` (might there be other kinds of certifications?)
+    *   `certifications` (long, close to "certificates", which is overloaded)
+    *   `attestations` (abstract and too JWT-y)
+    *   `jws` (dissuades other formats)
 
-*   If we retain the format of keys in the `release` object pointing to
+*   If we retain the format of keys in the `receipts` object pointing to
     signatures, should we relax the requirement that additional keys start
-    with `x_` or `X_`? In the future if we allowed, say, author signatures,
-    then we might add the key `author` or `release_user` or some such. Would
-    we allow any other signatures to appear in the file on PGXN?
+    with `x_` or `X_`?  In the future if we allowed, say, author signatures,
+    then we might add the key `author` or `user` or some such. Would we allow
+    any other signatures to appear in the file on PGXN? Perhaps allow `x_` and
+    `X_` properties of any kind, but require any other properties to be [JWS
+    JSON Serialization] objects?
 
 *   Should we eliminate the `digests` object in the `payload` and allow
     `SHA-512` only? I had made an object with `sha1` to simplify migration
@@ -433,16 +441,11 @@ the event the "release" private key was compromised.
     that may not yet support a new algorithm?
 
 *   For PGXN signing, how will the private and public keys be managed? Where
-    will private keys be stored and secured, and where will public keys be
-    published? Should they live in a separate domain, or some sort of key
-    store, so clients can fetch them less fear of compromise? The fear is that
-    someone may breach the root registry, modify extensions, and then sign
-    them with their own keys, which replace our own keys.
-
-    I *think* that, in general, if we can keep the root private key offline
-    and use intermediate keys, we can recommend that clients include the root
-    public key in their sources, so that any intermediate key breach can be
-    detected.
+    will private keys be stored and secured, and where will public [JWK]s be
+    published? Should the public live in a separate domain, or some sort of
+    key store, so clients can fetch them with a higher degree of trust? The
+    fear is that someone may compromise the root registry, modify extensions,
+    and then sign them with their own keys, which replace our own keys.
 
   [PGXN]: https://pgxn.org "PostgreSQL Extension Network"
   [PGXN Manager]: https://manager.pgxn.org
@@ -459,7 +462,7 @@ the event the "release" private key was compromised.
   [IETF RFC 2119]: https://www.ietf.org/rfc/rfc2119.txt
   [JWS validation steps]: https://www.rfc-editor.org/rfc/rfc7515.html#section-5.2
     "RFC 7515: Message Signature or MAC Validation"
-  [code points]: https://en.wikipedia.org/wiki/Code_point "Wikipedia: Code point"
+  [code point]: https://en.wikipedia.org/wiki/Code_point "Wikipedia: Code point"
   [RFC 3339]: https://www.rfc-editor.org/rfc/rfc3339.html
     "RFC 3339: Date and Time on the Internet: Timestamps"
   [ISO 8601]: https://en.wikipedia.org/wiki/ISO_8601 "Wikipedia: ISO 8601"
@@ -468,3 +471,6 @@ the event the "release" private key was compromised.
   [Python wheel]: https://packaging.python.org/en/latest/specifications/binary-distribution-format/
   [RFC 7517 JWK Set]: https://datatracker.ietf.org/doc/html/rfc7517#section-5
     "RFC 7517 JSON Web Key (JWK): JWK Set Format"
+  [JWK]: https://datatracker.ietf.org/doc/html/rfc7517
+    "RFC 7517 JSON Web Key (JWK)"
+  
