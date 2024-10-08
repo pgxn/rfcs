@@ -1,4 +1,4 @@
-src/SUMMARY.md: generate-book.py README.md text/*.md
+src/SUMMARY.md: generate-book.py README.md $(wildcard text/*.md)
 	@./generate-book.py
 
 run: src/SUMMARY.md

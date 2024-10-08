@@ -1,22 +1,23 @@
-{{#title PGXN RFC–0 — PGXN Release Meta Spec v2}}
+{{#title PGXN RFC–5 — Release Certification v2}}
 *   **RFC:** 5
-*   **Title:** PGXN Release Meta Spec v2
-*   **Slug:** `release-meta-spec-v2`
+*   **Title:** PGXN Release Certification
+*   **Slug:** `release-certification`
 *   **Start Date:** 2024-09-18
 *   **Status:** Proposed Standard
 *   **Category:** Packaging
 *   **Pull Request:** [pgxn/rfcs#5](https://github.com/pgxn/rfcs/pull/5)
-*   **Implementation Issue:** [pgxn/planning](https://github.com/pgxn/planning/issues/68)
+*   **Implementation Issue:** [pgxn/planning#68](https://github.com/pgxn/planning/issues/68)
 
-# RFC--5 --- PGXN Release Meta Spec v2
+# RFC--5 --- PGXN Release Certification
 
 ## Abstract
 
-This document describes version 2.0.0 of the *release* format for [PGXN]
-source distribution metadata. It extends the *distribution* [PGXN Meta Spec
-v2][v2] `META.json` provided by authors in PGXN uploads PGXN with signed
-metadata about the release on PGXN. This will allow clients to verify the
-validity of PGXN release sources via public key verification.
+This document describes a format for signed release certification in a the
+*release* format for [PGXN] source distribution metadata (`META.json`). It
+extends the author-provided *distribution* [PGXN Meta Spec v2][v2] `META.json`
+with an object to record one or more certifications, starting with
+[JWS]-signed metadata about the release on PGXN. This will allow clients to
+validate PGXN releases via public key verification.
 
 ## Introduction
 
@@ -24,16 +25,16 @@ validity of PGXN release sources via public key verification.
 
 When [PGXN Manager] was implemented in 2010, it published release zip files
 that contain author-supplied [PGXN Meta Spec v1][v1] metadata, and also
-published an augmented `META.json` file with three additional properties
-representing the release:
+published augmented `META.json` files with three additional properties
+representing each release:
 
 *    `user`: The name of the user who made the release
 *    `date`: A timestamp for the release
 *    `sha1`: A [SHA-1] digest of the release zip file
 
-Clients were advised to download both this release `META.json` along with the
-source zip file, and to validate the zip file against the checksum. The `user`
-and `date` information were provided mainly for informational purposes.
+Clients were advised to download this release `META.json` along with the
+source zip file, and to validate the zip file against the digest. The `user`
+and `date` fields were provided mainly for informational purposes.
 
 Compare, for example, the pair-0.1.7 [release META.json] to the
 author-provided [distribution META.json]. The difference is these three
@@ -47,25 +48,26 @@ fields:
 }
 ```
 
-Using the release metadata, a client can determine the URL to download the zip
-file, then validate it against the SHA-1 digest.
+Using the release metadata, a client determines the URL to download the zip
+file, then validates it against the SHA-1 digest.
 
 ### Signed Releases
 
 A lot has changed since 2010, including an increasing need for [public key
-signing] to validate that distribution files come from trusted sources. [PGXN
-Meta Spec v2][v2] provides an opportunity to update the release `META.json`
-format with signed metadata to enable a much more secure method of validation.
+signing] to validate that distribution files come from trusted sources. The
+introduction of [PGXN Meta Spec v2][v2] provides an opportunity to update the
+release `META.json` format with signed metadata to enable a much more secure
+method of validation.
 
 This RFC therefore proposes to extend [v2] distribution metadata with a single
-additional property, `certs`, that contains one or more certifications that
+additional property, `certs`, that contains one or more *certifications* that
 attest to the authenticity or other characteristics of a release on PGXN.
 
 The `certs` value is an object that contains at least one property, `pgxn`,
 which itself contains a PGXN-generated [RFC 7515][JWS] JSON Web Signature in
 the [JWS JSON Serialization] format. The `pgxn` property will allow clients
-not only to find the release file to download and verify against checksums,
-but also validate it against a public key provided by PGXN.
+not only to assemble the release URL and verify the downloaded file against
+checksums, but also validate it against a public key provided by PGXN.
 
 The design allows multiple signatures, certifications, or other attestations,
 which in the future **MAY** allow authors or other entities to sign releases
@@ -75,34 +77,28 @@ distribution `META.json` file:
 ``` json
 #{
   "certs": {
-     "pgxn": {
-       "payload": "eyJ1c2VyIjoidGhlb3J5IiwiZGF0ZSI6IjIwMjQtMDktMTNUMTc6MzI6NTVaIiwidXJpIjoiZGlzdC9wYWlyLzAuMS43L3BhaXItMC4xLjcuemlwIiwiZGlnZXN0cyI6eyJzaGE1MTIiOiJiMzUzYjVhODJiM2I1NGU5NWY0YTI4NTllN2EyYmQwNjQ4YWJjYjM1YTdjMzYxMmIxMjZjMmM3NTQzOGZjMmY4ZThlZTFmMTllNjFmMzBmYTU0ZDdiYjY0YmNmMjE3ZWQxMjY0NzIyYjQ5N2JjYjYxM2Y4MmQ3ODc1MTUxNWI2NyJ9fQ",
-       "signatures": [
-          {
-            "protected": "eyJhbGciOiJSUzI1NiJ9",
-            "header": { "kid": "2024-12-29" },
-            "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
-          }
-       ]
-     }
+    "pgxn": {
+      "payload": "eyJ1c2VyIjoidGhlb3J5IiwiZGF0ZSI6IjIwMjQtMDktMTNUMTc6MzI6NTVaIiwidXJpIjoiZGlzdC9wYWlyLzAuMS43L3BhaXItMC4xLjcuemlwIiwiZGlnZXN0cyI6eyJzaGE1MTIiOiJiMzUzYjVhODJiM2I1NGU5NWY0YTI4NTllN2EyYmQwNjQ4YWJjYjM1YTdjMzYxMmIxMjZjMmM3NTQzOGZjMmY4ZThlZTFmMTllNjFmMzBmYTU0ZDdiYjY0YmNmMjE3ZWQxMjY0NzIyYjQ5N2JjYjYxM2Y4MmQ3ODc1MTUxNWI2NyJ9fQ",
+      "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
+    }
   }
 #}
 ```
 
 This example includes a PGXN release signature, which is formatted in
-accordance with the [JWS JSON Serialization] format specified by [RFC
-7515][JWS]. The signed data is the contents of the `payload` property, which
-is the Base64 URL-encoded representation of this JSON object (with blank space
-formatting removed):
+accordance with the "flattened" [JWS JSON Serialization] format specified by
+[RFC 7515][JWS]. The signed data is the contents of the `payload` property,
+which is the Base64 URL-encoded representation of this JSON object (with blank
+space formatting removed):
 
 ``` json
 {
-  "user": "theory",
   "date": "2024-09-13T17:32:55Z",
-  "uri": "dist/pair/0.1.7/pair-0.1.7.zip",
   "digests": {
     "sha512": "b353b5a82b3b54e95f4a2859e7a2bd0648abcb35a7c3612b126c2c75438fc2f8e8ee1f19e61f30fa54d7bb64bcf217ed1264722b497bcb613f82d78751515b67"
-  }
+  },
+  "uri": "dist/pair/0.1.7/pair-0.1.7.zip",
+  "user": "theory"
 }
 ```
 
@@ -146,7 +142,7 @@ Distribution name and Release version, and signed and published by PGXN.
 
 [JWS], JSON Web Signature, represents content secured with digital signatures
 or Message Authentication Codes (MACs) using JSON-based data structures. This
-RFC proposes to us this standard to sign PGXN Releases.
+RFC proposes to sign PGXN Releases with JWS.
 
 ### Process ###
 
@@ -183,10 +179,10 @@ of the same name:
 
 The steps to publish a signed release on PGXN would be:
 
-1.  User updates the version in the `META.json` as appropriate for the
-    release, then bundles the `META.json` file and all required and
-    recommended source code and documentation files into a zip archive file.
-    From a Git repository, for example:
+1.  User updates the version and any other necessary fields in the `META.json`
+    as appropriate for the release, then bundles the `META.json` file and all
+    required and recommended source code and documentation files into a zip
+    archive file. From a Git repository, for example:
 
     ```sh
     git archive --format zip --prefix=pair-0.1.7/ -o pair-0.1.7.zip HEAD
@@ -202,9 +198,10 @@ The steps to publish a signed release on PGXN would be:
     constructs the payload for signing, signs with its private key, then adds
     the `release` object to the copied `META.json` file.
 
-5.   PGXN Manager publishes the distribution archive and the `META.json` file
-     to the root registry, along with an additional file that lists all the
-     releases of the distribution. These files would be:
+5.   PGXN Manager publishes the distribution archive and the signature-bearing
+     "release" `META.json` file to the root registry, along with an additional
+     file that lists all the releases of the distribution. These files would
+     be:
 
      *    Release list: `dist/pair.json`
      *    0.1.7 release `META.json`: `dist/pair/0.1.7/META.json`
@@ -258,6 +255,15 @@ Clients **MUST** follow the [JWS validation steps].
 
 ### Certs Object Properties
 
+The `certs` property is a JSON object that supports a single key, `pgxn`. No
+other keys are allowed except [v2] custom keys, which must start with `x_` or
+`X_`.
+
+The value for the `pgxn` property **MUST** be formatted according to the [JWS
+JSON Serialization], which specifies either a "general" or "flattened" syntax.
+
+#### General Syntax
+
 ```json
 #{
   "pgxn": {
@@ -273,12 +279,7 @@ Clients **MUST** follow the [JWS validation steps].
 #}
 ```
 
-The `certs` property is a JSON object that supports a single key, `pgxn`. No
-other keys are allowed except [v2] custom keys, which must start with `x_` or
-`X_`.
-
-The value for the `pgxn` property **MUST** be formatted according to the [JWS
-JSON Serialization], which specifies:
+The [General JWS JSON Serialization Syntax] specifies these properties:
 
 > *   **payload**: The "payload" member **MUST** be present and contain the
 >     value `BASE64URL(JWS Payload)`.
@@ -311,38 +312,55 @@ JSON Serialization], which specifies:
 > Additional members can be present in both the JSON objects defined above; if
 > not understood by implementations encountering them, they MUST be ignored.
 
-#### PGXN Payload
+#### Flattened Syntax
 
-For the `pgxn` JWS `payload` property, the value **MUST** be an object with
-the following structure:
+``` json
+#{
+  "pgxn": {
+    "protected":"eyJhbGciOiJSUzI1NiJ9",
+    "header": {"kid": "2024-12-29" },
+    "payload": "eyJ1c2VyIjoidGhlb3J5IiwiZGF0ZSI6IjIwMjQtMDktMTNUMTc6MzI6NTVaIiwidXJpIjoiZGlzdC9wYWlyLzAuMS43L3BhaXItMC4xLjcuemlwIiwiZGlnZXN0cyI6eyJzaGE1MTIiOiJiMzUzYjVhODJiM2I1NGU5NWY0YTI4NTllN2EyYmQwNjQ4YWJjYjM1YTdjMzYxMmIxMjZjMmM3NTQzOGZjMmY4ZThlZTFmMTllNjFmMzBmYTU0ZDdiYjY0YmNmMjE3ZWQxMjY0NzIyYjQ5N2JjYjYxM2Y4MmQ3ODc1MTUxNWI2NyJ9fQ",
+    "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"    
+  }
+#}
+```
+
+
+The [Flattened JWS JSON Serialization Syntax] is based on the general syntax,
+but flattens it by it by removing the replacing the `signatures` array with
+the `protected`, `header`, and `signature` fields for a single signature at
+the same level as the `payload` property. The values in those properties are
+otherwise the same as for the general syntax.
+
+#### PGXN Payload
 
 ``` json
 {
-  "user": "theory",
   "date": "2024-09-13T17:32:55Z",
-  "uri": "dist/pair/0.1.7/pair-0.1.7.zip",
   "digests": {
     "sha512": "b353b5a82b3b54e95f4a2859e7a2bd0648abcb35a7c3612b126c2c75438fc2f8e8ee1f19e61f30fa54d7bb64bcf217ed1264722b497bcb613f82d78751515b67"
-  }
+  },
+  "uri": "dist/pair/0.1.7/pair-0.1.7.zip",
+  "user": "theory"
 }
 ```
 
 ``` json
 {
-  "user": "the_grinch",
   "date": "2012-04-25T02:48:38Z",
-  "uri": "dist/widget/0.0.1/widget-0.0.1.zip",
   "digests": {
     "sha1": "b7ecaa270e912a60e3dd919918004c6fcd4989c9"
   }
+  "uri": "dist/widget/0.0.1/widget-0.0.1.zip",
+  "user": "the_grinch"
 }
 ```
 
-The format for the `payload` property is itself an object. When formatting
-into the `payload` value, its keys **MUST** appear in Unicode [code point]
-order and **MUST** contain no formatting-only blank space ("pretty printing"),
-but just a single line of JSON. In other words, before Base64 URL-encoding the
-second example above, it must be formatted as:
+The decoded value of the `pgxn` JWS `payload` property **MUST** be an object.
+When formatting into the `payload` value, its keys **MUST** appear in Unicode
+[code point] order and **MUST** contain no formatting-only blank space
+("pretty printing"), but just a single line of JSON. In other words, before
+Base64 URL-encoding the second example above, it must be formatted as:
 
 ```json
 {"date":"2012-04-25T02:48:38Z","digests":{"sha1":"b7ecaa270e912a60e3dd919918004c6fcd4989c9"},"uri":"dist/widget/0.0.1/widget-0.0.1.zip","user":"the_grinch"}
@@ -352,7 +370,7 @@ The `pgxn` object **MUST** contain all of these properties:
 
 *   **user**: The username of the PGXN user who uploaded the release.
 *   **date**: The date of the release in [RFC 3339]/[ISO 8601] format in the
-    UTC time zone (indicated by the `Z`).
+    UTC time zone, indicated by a trailing `Z`.
 *   **uri**: The URI for the release archive, relative to a PGXN mirror root,
     in the format `dist/{name}/{version}/{name}-{version}.zip`.
 *   **digests**: An object containing cryptographic hash digests for the file
@@ -367,9 +385,8 @@ The `pgxn` object **MUST** contain all of these properties:
 
 *   This pattern could make it more difficult for clients to install code from
     PGXN, especially if they incorrectly validate the signature.
-*   Some clients may choose not to implement the validation, potentially
-    leaving users to think they have trusted, validated code when they may
-    not.
+*   Some clients may choose not to implement validation, potentially leaving
+    users to think they have trusted, validated code when they may not.
 
 ## Rationale and alternatives
 
@@ -389,36 +406,36 @@ wheel], and is enabled by the separation of the release `META.json` file from
 the release file it describes.
 
 The use of [JWS] ensures a widely-vetted key signing and distribution
-standard, and the likelihood that clients can take advantage of well-tested,
-mature libraries to handle signing and validation. And finally, the use of RFC
-7515-standard [JWS JSON Serialization] allows multiple signatures, which will
+standard, and the likelihood that clients can use well-tested, mature
+libraries to handle signing and validation. And finally, the use of RFC
+7515-standard [JWS JSON Serialization] allows multiple signatures, which may
 simplify key rotation.
 
 ## Future possibilities
 
 By embedding the PGXN [JWS] data under its own, key, `pgxn`, the design allows
-for other parties to add their own release metadata and signatures. For
-example, an organization that provides security scanning services may want to
-add their own signature to validate that they have tested a specific release.
+other parties to add their own certifications and signatures. For example, an
+organization that provides security scanning services may want to add their
+own signature to certify that they have tested a specific release.
 
 In the future we may also want to issue key pairs to registered developers and
 require that they sign releases. This would allow an extra level of
 protection, as well as key revocation in case an upload has been tampered
 with.
 
-For the PGXN signing itself the proposed use of a separate, offline "root" key
-to sign an intermediate "release" key would allow for easier key rotation in
-the event the "release" private key was compromised.
+For the PGXN signing itself, the proposed use of a separate, offline "root"
+key to sign an intermediate "release" key would simplify key rotation in the
+event of "release" private key compromise.
 
 ## Unresolved questions
 
 *   Is `certs` the best name for this new property? People many assume it
     means "certificates". Other possibilities:
-    *   `signatures` (might there be other kinds of certifications?)
-    *   `certifications` (long, still close to "certificates", which is overloaded)
-    *   `receipts` (cute, but a bit opaque)
-    *   `attestations` (abstract and too JWT-y)
-    *   `jws` (dissuades other formats)
+    *   `signatures`: Might there be other kinds of certifications?
+    *   `certifications`: Long; still close to "certificates", which is overloaded
+    *   `receipts` Cute, but a bit opaque
+    *   `attestations` Abstract and too JWT-y
+    *   `jws` Dissuades other formats
     *   `coupons`, `authentication`, `authenticity`, `credentials`,
         `vouchers`, `records` (meh)
 
@@ -426,13 +443,11 @@ the event the "release" private key was compromised.
     signatures, should we relax the requirement that additional keys start
     with `x_` or `X_`?  In the future if we allowed, say, author signatures,
     then we might add the key `author` or `user` or some such. Would we allow
-    any other signatures to appear in the file on PGXN? Perhaps allow `x_` and
-    `X_` properties of any kind, but require any other properties to be [JWS
-    JSON Serialization] objects?
+    any other signatures to appear in the file on PGXN?
 
-*   Should we eliminate the `digests` object in the `payload` and allow
+*   Should we eliminate the `digests` object in the payload and require
     `SHA-512` only? I had made an object with `sha1` to simplify migration
-    from the PGXN v1 spec, which includes only a `sha1` has, but maybe it'd be
+    from the PGXN v1 spec, which includes only a `sha1`, but maybe it'd be
     better to simplify the structure here and requires new SHA-512s from the
     migration.
 
@@ -448,7 +463,7 @@ the event the "release" private key was compromised.
     published? Should the public live in a separate domain, or some sort of
     key store, so clients can fetch them with a higher degree of trust? The
     fear is that someone may compromise the root registry, modify extensions,
-    and then sign them with their own keys, which replace our own keys.
+    and then sign them with their own keys, which replace the PGXN keys.
 
   [PGXN]: https://pgxn.org "PostgreSQL Extension Network"
   [PGXN Manager]: https://manager.pgxn.org
@@ -476,4 +491,7 @@ the event the "release" private key was compromised.
     "RFC 7517 JSON Web Key (JWK): JWK Set Format"
   [JWK]: https://datatracker.ietf.org/doc/html/rfc7517
     "RFC 7517 JSON Web Key (JWK)"
-  
+  [General JWS JSON Serialization Syntax]: https://datatracker.ietf.org/doc/html/rfc7515#section-7.2.1
+    "RFC 7515: General JWS JSON Serialization Syntax"
+  [Flattened JWS JSON Serialization Syntax]: https://datatracker.ietf.org/doc/html/rfc7515#section-7.2.2
+    "RFC 7515: Flattened JWS JSON Serialization Syntax"
