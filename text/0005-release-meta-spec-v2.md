@@ -1,14 +1,14 @@
 {{#title PGXN RFC–0 — PGXN Release Meta Spec v2}}
-*   **RFC:** 0 (fill in with pull request number)
+*   **RFC:** 5
 *   **Title:** PGXN Release Meta Spec v2
 *   **Slug:** `release-meta-spec-v2`
 *   **Start Date:** 2024-09-18
 *   **Status:** Proposed Standard
 *   **Category:** Packaging
-*   **Pull Request:** [pgxn/rfcs#4](https://github.com/pgxn/rfcs/pull/4)
-*   **Implementation Issue:** TBD
+*   **Pull Request:** [pgxn/rfcs#5](https://github.com/pgxn/rfcs/pull/5)
+*   **Implementation Issue:** [pgxn/planning](https://github.com/pgxn/planning/issues/68)
 
-# RFC--0 --- PGXN Release Meta Spec v2
+# RFC--5 --- PGXN Release Meta Spec v2
 
 ## Abstract
 
