@@ -58,31 +58,30 @@ Meta Spec v2][v2] provides an opportunity to update the release `META.json`
 format with signed metadata to enable a much more secure method of validation.
 
 This RFC therefore proposes to extend [v2] distribution metadata with a single
-additional property, `receipts`, that contains one or more cryptographic
-signatures or certifications that attest to the authenticity or other
-characteristics of a release on PGXN.
+additional property, `certs`, that contains one or more certifications that
+attest to the authenticity or other characteristics of a release on PGXN.
 
-The `receipts` value is an object that contains at least one property, `pgxn`,
+The `certs` value is an object that contains at least one property, `pgxn`,
 which itself contains a PGXN-generated [RFC 7515][JWS] JSON Web Signature in
 the [JWS JSON Serialization] format. The `pgxn` property will allow clients
 not only to find the release file to download and verify against checksums,
 but also validate it against a public key provided by PGXN.
 
-The design allows multiple signatures, certificates, or other attestations,
+The design allows multiple signatures, certifications, or other attestations,
 which in the future **MAY** allow authors or other entities to sign releases
 with their own keys. The new format appends a structure such as this to the
 distribution `META.json` file:
 
 ``` json
 #{
-  "receipts": {
+  "certs": {
      "pgxn": {
        "payload": "eyJ1c2VyIjoidGhlb3J5IiwiZGF0ZSI6IjIwMjQtMDktMTNUMTc6MzI6NTVaIiwidXJpIjoiZGlzdC9wYWlyLzAuMS43L3BhaXItMC4xLjcuemlwIiwiZGlnZXN0cyI6eyJzaGE1MTIiOiJiMzUzYjVhODJiM2I1NGU5NWY0YTI4NTllN2EyYmQwNjQ4YWJjYjM1YTdjMzYxMmIxMjZjMmM3NTQzOGZjMmY4ZThlZTFmMTllNjFmMzBmYTU0ZDdiYjY0YmNmMjE3ZWQxMjY0NzIyYjQ5N2JjYjYxM2Y4MmQ3ODc1MTUxNWI2NyJ9fQ",
        "signatures": [
           {
             "protected": "eyJhbGciOiJSUzI1NiJ9",
             "header": { "kid": "2024-12-29" },
-            "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZES c6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
+            "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
           }
        ]
      }
@@ -221,8 +220,8 @@ The steps for a client to find, download, and verify a PGXN release would be:
     the URI for its release `META.json`. The format is
     `dist/{name}/{version}/META.json`; for the above example, that results in
     `dist/pair/0.1.7/META.json`.
-3.  Fetch the release `META.json` file, read in the `receipts/pgxn` object,
-    and use PGXN's current public key (downloaded as a [RFC 7517 JWK Set]) to
+3.  Fetch the release `META.json` file, read in the `certs/pgxn` object, and
+    use PGXN's current public key (downloaded as a [RFC 7517 JWK Set]) to
     verify that it was signed by PGXN. Abort with an error if validation
     fails.
 4.  Decode the payload and use its `uri` field to download the release zip
@@ -246,7 +245,7 @@ of trust:
     above. The most important property in the signed payload is the list of
     digests.
 5.  Clients **MUST** regularly fetch the [RFC 7517 JWK Set] of public keys,
-    validate their authenticity, and use them to verify `receipts/pgxn`
+    validate their authenticity, and use them to verify `certs/pgxn`
     signatures.
 6.  With the data validated, the client can download and verify the release
     file against a signed digest (preference order: `sha512`, `sha256`,
@@ -257,7 +256,7 @@ To support this infrastructure, PGXN Manager **MUST** be updated to properly
 generate and sign the payload and include it in the release `META.json` files.
 Clients **MUST** follow the [JWS validation steps].
 
-### Receipts Object Properties
+### Certs Object Properties
 
 ```json
 #{
@@ -267,16 +266,16 @@ Clients **MUST** follow the [JWS validation steps].
       {
         "protected":"eyJhbGciOiJSUzI1NiJ9",
         "header": {"kid": "2024-12-29" },
-        "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZES c6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
+        "signature": "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-rLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
       }
     ]
   }
 #}
 ```
 
-The `receipts` property is a JSON object that supports a single key, `pgxn`.
-No other keys are allowed except [v2] custom keys, which must start with `x_`
-or `X_`.
+The `certs` property is a JSON object that supports a single key, `pgxn`. No
+other keys are allowed except [v2] custom keys, which must start with `x_` or
+`X_`.
 
 The value for the `pgxn` property **MUST** be formatted according to the [JWS
 JSON Serialization], which specifies:
@@ -413,16 +412,17 @@ the event the "release" private key was compromised.
 
 ## Unresolved questions
 
-*   Is `receipts` the best name for this new property? Other possibilities:
+*   Is `certs` the best name for this new property? People many assume it
+    means "certificates". Other possibilities:
     *   `signatures` (might there be other kinds of certifications?)
-    *   `certifications` (long, close to "certificates", which is overloaded)
-    *   `certs` (accurate, but overloaded to mean "certificates")
+    *   `certifications` (long, still close to "certificates", which is overloaded)
+    *   `receipts` (cute, but a bit opaque)
     *   `attestations` (abstract and too JWT-y)
     *   `jws` (dissuades other formats)
     *   `coupons`, `authentication`, `authenticity`, `credentials`,
         `vouchers`, `records` (meh)
 
-*   If we retain the format of keys in the `receipts` object pointing to
+*   If we retain the format of keys in the `certs` object pointing to
     signatures, should we relax the requirement that additional keys start
     with `x_` or `X_`?  In the future if we allowed, say, author signatures,
     then we might add the key `author` or `user` or some such. Would we allow
