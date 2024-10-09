@@ -212,10 +212,10 @@ The steps to publish a signed release on PGXN would be:
 The steps for a client to find, download, and verify a PGXN release would be:
 
 1.  Using a valid PGXN mirror, assemble and fetch the release list for the
-    the extension, `dist/pair.json`.
+    extension, `dist/pair.json`.
 2.  Use the release list to determine the best version to install and assemble
     the URI for its release `META.json`. The format is
-    `dist/{name}/{version}/META.json`; for the above example, that results in
+    `dist/{name}/{version}/META.json`; for the above example, which results in
     `dist/pair/0.1.7/META.json`.
 3.  Fetch the release `META.json` file, read in the `certs/pgxn` object, and
     use PGXN's current public key (downloaded as a [RFC 7517 JWK Set]) to
@@ -236,8 +236,8 @@ of trust:
 1.  A root key pair is maintained by PGXN, with the private key kept offline.
 2.  A release key pair is generated and signed by the private root key, with
     the private key kept in an online vault accessible only to PGXN Manager.
-3.  The public keys for both keys are published by PGXN as a [RFC 7517 JWK
-    Set].
+3.  The public keys for both key pairs are published by PGXN as a [RFC 7517
+    JWK Set].
 4.  PGXN Manager uses the private release key to sign releases as described
     above. The most important property in the signed payload is the list of
     digests.
@@ -298,7 +298,7 @@ The [General JWS JSON Serialization Syntax] specifies these properties:
 >
 > *   **header**: The "header" member **MUST** be present and contain the
 >     value JWS Unprotected Header when the JWS Unprotected Header value is
->     non- empty; otherwise, it **MUST** be absent. This value is represented
+>     non-empty; otherwise, it **MUST** be absent. This value is represented
 >     as an unencoded JSON object, rather than as a string. These Header
 >     Parameter values are not integrity protected.
 >
