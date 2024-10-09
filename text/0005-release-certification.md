@@ -1,4 +1,4 @@
-{{#title PGXN RFC–5 — Release Certification v2}}
+{{#title PGXN RFC–5 — Release Certification}}
 *   **RFC:** 5
 *   **Title:** PGXN Release Certification
 *   **Slug:** `release-certification`
