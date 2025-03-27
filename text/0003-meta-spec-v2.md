@@ -152,8 +152,9 @@ Locator as defined by [IETF RFC 3986].
 *Path* is a [String](#string) with a relative file path that identifies a file
 in the [Distribution](#source-distribution). The path **MUST** be specified
 with Unix conventions and **MUST NOT** include parent directory components
-(`..`). It may begin with a slash, but will still be considered relative to
-the directory containing the `META.json` file.
+(`..`). A current directory component (`.`) may only be used at the start of
+the path (e.g., `./README.md`). It may begin with a slash, but will still be
+considered relative to the directory containing the `META.json` file.
 
 #### Glob ####
 
@@ -173,7 +174,9 @@ files in the [Distribution](#source-distribution). Its format, based on the
 *   An asterisk (`*`) matches anything except a slash. The character `?`
     matches any one character except `/` The range notation, e.g., `[a-zA-Z]`,
     can be used to match one of the characters in a range.
-*   Parent directory components (`..`) are not allowed.
+*   Parent anc current directory components (`..`) are not allowed.
+*   Current directory components (`.`) are not allowed except at the start of
+    the glob (e.g., `./.git*`).
 
 #### SemVer ####
 
