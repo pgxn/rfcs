@@ -172,8 +172,16 @@ files in the [Distribution](#source-distribution). Its format, based on the
     only match directories, otherwise the pattern can match both files and
     directories.
 *   An asterisk (`*`) matches anything except a slash. The character `?`
-    matches any one character except `/` The range notation, e.g., `[a-zA-Z]`,
-    can be used to match one of the characters in a range.
+    matches any one character except `/`.
+*   A double asterisk (`**`) matches any characters across zero or more
+    directory components, and must be delimited by forward slashes or
+    terminations (the beginning and/or end of a glob expression).
+*   A character class, e.g., `[a-zA-Z]`, matches one of the characters in the
+    class. Use a `!` as the first character to negate the class (`e.g., `[!a]`
+    matches any character other than `a`).
+*   Alternations (`{...,...}`) match an arbitrary sequence of one or more
+    comma separated sub-globs. For example, `{a?c,x?z,foo}` matches any of the
+    alternative globs `a?c`, `x?z`, or `foo`.
 *   Parent anc current directory components (`..`) are not allowed.
 *   Current directory components (`.`) are not allowed except at the start of
     the glob (e.g., `./.git*`).
@@ -891,7 +899,7 @@ Properties:
     to [Objects](#object) with [purls](#purl) property keys pointing to
     [Version Range](#version-range) values.
 
-    See the [Package Spec](#packages-spec) for the full definition of this
+    See the [Packages Spec](#packages-spec) for the full definition of this
     property.
 
 *   **variations**: An [Array](#array) of [Object](#object)s that define
